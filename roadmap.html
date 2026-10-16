@@ -77,7 +77,7 @@
       .stat-box.easy .stat-val{color:var(--easy)}
       .stat-box.med .stat-val{color:var(--med)}
       .stat-box.hard .stat-val{color:var(--hard)}
-      .phase-block{margin-bottom:0;scroll-margin-top:70px}
+      .phase-block{margin-bottom:0;scroll-margin-top:105px}
       .phase-divider{border:none;border-top:1px solid var(--border);margin:32px 0}
       .phase-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;gap:12px}
       .phase-eyebrow{font-family:"Geist Mono",monospace;font-size:10px;color:var(--text3);letter-spacing:.12em;text-transform:uppercase;margin-bottom:3px}
@@ -104,6 +104,8 @@
       .prob-name{color:var(--text2)}
       .prob-hint{font-size:11px;color:var(--text3);font-style:italic;margin-top:1px;line-height:1.3}
       .prob-pattern{font-family:"Geist Mono",monospace;font-size:10.5px;color:var(--text3);white-space:nowrap}
+      .pattern-tag{cursor:pointer;padding:2px 6px;border-radius:4px;border:1px solid transparent;transition:all .13s;display:inline-block}
+      .pattern-tag:hover{color:var(--py);border-color:var(--border2);background:var(--bg3)}
       .prob-lc-cell{text-align:right;width:68px}
       .lc-link{font-family:"Geist Mono",monospace;font-size:10px;color:var(--text3);border:1px solid var(--border2);border-radius:3px;padding:1px 5px;text-decoration:none;white-space:nowrap;transition:all .13s}
       .lc-link:hover{color:var(--text);border-color:var(--text3)}
@@ -120,7 +122,7 @@
       .topbar-left{display:flex;align-items:center;gap:12px}
       .sidebar-overlay{display:none}
 
-      /* Setup Modal Styles (matches existing clean UI) */
+      /* Setup Modal Styles */
       .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.72);backdrop-filter:blur(6px);z-index:200;display:none;align-items:center;justify-content:center;padding:16px}
       .modal-backdrop.open{display:flex}
       .modal-card{background:var(--bg2);border:1px solid var(--border2);border-radius:10px;width:100%;max-width:460px;padding:24px;box-shadow:0 20px 50px rgba(0,0,0,.5)}
@@ -152,32 +154,52 @@
       }
 
       /* ── Search & Filter Bar ───────────────────────────────────── */
-      .filter-bar{padding:8px 36px;border-bottom:1px solid var(--border);background:var(--bg2);display:flex;align-items:center;flex-wrap:wrap;gap:8px}
-      .search-wrap{position:relative;flex:1;min-width:180px;max-width:340px}
-      .search-ico{position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--text3);pointer-events:none}
-      .search-inp{width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:6px;padding:5px 10px 5px 30px;color:var(--text);font-family:"DM Sans",sans-serif;font-size:12.5px;outline:none;transition:border-color .15s}
+      .filter-bar{position:sticky;top:45px;background:var(--topbar-bg);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding:8px 36px;display:flex;align-items:center;flex-wrap:wrap;gap:8px;z-index:45}
+      .search-wrap{position:relative;flex:1;min-width:180px;max-width:280px}
+      .search-ico{position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--text3);pointer-events:none}
+      .search-inp{width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:6px;padding:5px 24px 5px 28px;color:var(--text);font-family:"DM Sans",sans-serif;font-size:12px;outline:none;transition:border-color .15s}
       .search-inp:focus{border-color:var(--py)}
       .search-inp::placeholder{color:var(--text3)}
-      .search-clear{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px;line-height:1;padding:0;display:none}
+      .search-clear{position:absolute;right:7px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:pointer;font-size:12px;line-height:1;padding:2px;display:none}
+      .search-clear:hover{color:var(--text)}
       .search-clear.visible{display:block}
+      .search-kbd{position:absolute;right:7px;top:50%;transform:translateY(-50%);font-family:"Geist Mono",monospace;font-size:9.5px;color:var(--text3);border:1px solid var(--border2);border-radius:3px;padding:0 4px;pointer-events:none;background:var(--bg2);line-height:1.4}
+      .search-kbd.hidden{display:none}
       .filter-chips{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
-      .chip{font-family:"Geist Mono",monospace;font-size:10.5px;border:1px solid var(--border2);border-radius:4px;padding:3px 9px;cursor:pointer;color:var(--text3);background:var(--bg);transition:all .14s;white-space:nowrap;user-select:none}
-      .chip:hover{border-color:var(--text2);color:var(--text)}
-      .chip.active-all{border-color:var(--accent);color:var(--accent);background:rgba(228,228,231,.08)}
-      .chip.active-e{border-color:var(--easy);color:var(--easy);background:rgba(34,197,94,.08)}
-      .chip.active-m{border-color:var(--med);color:var(--med);background:rgba(245,158,11,.08)}
-      .chip.active-h{border-color:var(--hard);color:var(--hard);background:rgba(239,68,68,.08)}
-      .chip.active-done{border-color:var(--py);color:var(--py);background:rgba(59,130,246,.08)}
-      .chip.active-undone{border-color:var(--text2);color:var(--text2);background:rgba(212,212,216,.08)}
+      button.chip{font-family:"Geist Mono",monospace;font-size:11px;border:1px solid var(--border2);border-radius:5px;padding:4px 9px;cursor:pointer;color:var(--text3);background:var(--bg);transition:all .14s ease;white-space:nowrap;display:inline-flex;align-items:center;gap:5px;outline:none;user-select:none}
+      button.chip:hover{border-color:var(--text2);color:var(--text);background:var(--bg3)}
+      .chip-dot{width:6px;height:6px;border-radius:50%;display:inline-block;flex-shrink:0}
+      .chip-dot.diff-e{background:var(--easy)}
+      .chip-dot.diff-m{background:var(--med)}
+      .chip-dot.diff-h{background:var(--hard)}
+      .chip-num{font-size:9.5px;color:inherit;opacity:.65;font-weight:400;margin-left:1px}
+      button.chip.active-all{border-color:var(--accent);color:var(--accent);background:rgba(228,228,231,.08)}
+      button.chip.active-e{border-color:var(--easy);color:var(--easy);background:rgba(34,197,94,.12)}
+      button.chip.active-m{border-color:var(--med);color:var(--med);background:rgba(245,158,11,.12)}
+      button.chip.active-h{border-color:var(--hard);color:var(--hard);background:rgba(239,68,68,.12)}
+      button.chip.active-done{border-color:var(--py);color:var(--py);background:rgba(59,130,246,.12)}
+      button.chip.active-undone{border-color:var(--text2);color:var(--text2);background:rgba(212,212,216,.10)}
+      button.chip.active-week{border-color:var(--py);color:var(--py);background:rgba(59,130,246,.15);box-shadow:0 0 10px rgba(59,130,246,.15)}
+      .chip-clear-btn{border-color:rgba(239,68,68,.3);color:#f87171;background:rgba(239,68,68,.06);display:none}
+      button.chip.chip-clear-btn:hover{border-color:#ef4444;color:#ef4444;background:rgba(239,68,68,.12)}
+      .chip-clear-btn.visible{display:inline-flex}
       .filter-divider{width:1px;height:18px;background:var(--border2);flex-shrink:0;margin:0 2px}
-      .filter-count{font-family:"Geist Mono",monospace;font-size:10px;color:var(--text3);white-space:nowrap;margin-left:4px}
-      .no-results{padding:48px;text-align:center;color:var(--text3);font-size:13.5px;display:none}
+      .filter-count{font-family:"Geist Mono",monospace;font-size:10.5px;color:var(--text3);margin-left:auto;white-space:nowrap}
+      .week-curr-pill{font-family:"Geist Mono",monospace;font-size:9.5px;color:var(--py);background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.3);border-radius:3px;padding:1px 6px;letter-spacing:.04em;text-transform:uppercase;margin-left:4px;flex-shrink:0}
+      .no-results{padding:40px 20px;text-align:center;color:var(--text3);font-size:13.5px;background:var(--bg2);border:1px dashed var(--border2);border-radius:8px;margin:24px 0;display:none}
       .no-results.visible{display:block}
+      .no-results-title{font-size:14px;color:var(--text2);margin-bottom:6px}
+      .no-results-sub{font-size:12px;color:var(--text3);margin-bottom:12px}
+      .no-results-btn{background:var(--bg3);border:1px solid var(--border2);color:var(--text);border-radius:5px;padding:5px 12px;font-size:12px;cursor:pointer;font-family:"DM Sans",sans-serif;transition:all .15s}
+      .no-results-btn:hover{border-color:var(--text2)}
+      .phase-block.hidden{display:none}
+      .phase-divider.hidden{display:none}
       .week-section.hidden{display:none}
       .prob-row.filtered-out{display:none}
       @media(max-width:700px){
-        .filter-bar{padding:8px 14px}
+        .filter-bar{top:41px;padding:8px 16px}
         .search-wrap{max-width:100%;flex:unset;width:100%}
+        .filter-count{margin-left:0}
       }
     </style>
   </head>
@@ -251,27 +273,39 @@
         </div>
       </div>
 
-      <!-- Search & Filter Bar -->
+      <!-- Search & Advanced Filter Bar -->
       <div class="filter-bar" id="filterBar">
         <div class="search-wrap">
           <span class="search-ico">⌕</span>
-          <input class="search-inp" id="searchInp" type="text" placeholder="Search problems, patterns…" oninput="onSearch(this.value)" autocomplete="off" spellcheck="false" />
-          <button class="search-clear" id="searchClear" onclick="clearSearch()" title="Clear">✕</button>
+          <input class="search-inp" id="searchInp" type="text" placeholder="Search problems, patterns, #lc…" oninput="onSearch(this.value)" autocomplete="off" spellcheck="false" />
+          <span class="search-kbd" id="searchKbd">/</span>
+          <button type="button" class="search-clear" id="searchClear" onclick="clearSearch()" title="Clear">✕</button>
         </div>
+
         <div class="filter-chips" id="diffChips">
-          <span class="chip active-all" data-diff="all" onclick="setDiff('all')">All</span>
-          <span class="chip" data-diff="e" onclick="setDiff('e')">● Easy</span>
-          <span class="chip" data-diff="m" onclick="setDiff('m')">● Med</span>
-          <span class="chip" data-diff="h" onclick="setDiff('h')">● Hard</span>
+          <button type="button" class="chip active-all" data-diff="all" onclick="setDiff('all')">All <span class="chip-num" id="chipCountAll">150</span></button>
+          <button type="button" class="chip" data-diff="e" onclick="setDiff('e')"><span class="chip-dot diff-e"></span>Easy <span class="chip-num" id="chipCountE"></span></button>
+          <button type="button" class="chip" data-diff="m" onclick="setDiff('m')"><span class="chip-dot diff-m"></span>Med <span class="chip-num" id="chipCountM"></span></button>
+          <button type="button" class="chip" data-diff="h" onclick="setDiff('h')"><span class="chip-dot diff-h"></span>Hard <span class="chip-num" id="chipCountH"></span></button>
         </div>
+
         <div class="filter-divider"></div>
+
         <div class="filter-chips" id="statusChips">
-          <span class="chip active-all" data-status="all" onclick="setStatus('all')">All Status</span>
-          <span class="chip" data-status="undone" onclick="setStatus('undone')">Todo</span>
-          <span class="chip" data-status="done" onclick="setStatus('done')">Done</span>
+          <button type="button" class="chip active-all" data-status="all" onclick="setStatus('all')">All Status</button>
+          <button type="button" class="chip" data-status="undone" onclick="setStatus('undone')">Todo <span class="chip-num" id="chipCountTodo"></span></button>
+          <button type="button" class="chip" data-status="done" onclick="setStatus('done')">Done <span class="chip-num" id="chipCountDone"></span></button>
         </div>
+
         <div class="filter-divider"></div>
-        <span class="filter-count" id="filterCount"></span>
+
+        <div class="filter-chips">
+          <button type="button" class="chip" id="chipThisWeek" onclick="toggleThisWeek()"><span style="color:var(--py);font-size:10px">⚡</span> This Week <span class="chip-num" id="chipCountThisWeek"></span></button>
+          <button type="button" class="chip chip-clear-btn" id="resetFiltersBtn" onclick="resetAllFilters()">✕ Clear</button>
+        </div>
+
+        <div class="filter-divider"></div>
+        <span class="filter-count" id="filterCount">150 problems</span>
       </div>
 
       <div class="content">
@@ -310,12 +344,23 @@
           <div class="stat-box hard"><div class="stat-lbl">Hard</div><div class="stat-val" id="gs_hard">0</div><div class="stat-sub" id="gs_hard_t">/ 0</div></div>
         </div>
         <div id="phasesRoot"></div>
-        <div class="no-results" id="noResults">No problems match your search or filters.</div>
+        <div class="no-results" id="noResults">
+          <div class="no-results-title">No problems match your search or filter combination</div>
+          <div class="no-results-sub">Try adjusting your difficulty, status, or search keywords.</div>
+          <button type="button" class="no-results-btn" onclick="resetAllFilters()">Clear all filters</button>
+        </div>
       </div>
     </main>
     <script>
 const CK13='<svg class="ck" width="8" height="6" viewBox="0 0 8 6" fill="none"><path d="M1 3L3 5L7 1" stroke="var(--check-fill)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const PHASE_COLORS=["var(--phase1)","var(--phase2)","var(--phase3)","var(--phase4)","var(--phase5)"];
+
+/* ── Filter State (Initialized upfront to avoid TDZ errors) ────── */
+let _activeDiff="all";
+let _activeStatus="all";
+let _thisWeekOnly=false;
+let _currentWid=null;
+let _searchQ="";
 
 /* ── All 150 Problems with verified LeetCode slugs ────────────────── */
 const PHASES=[
@@ -543,9 +588,9 @@ function todayISO(){
 }
 
 const DEFAULT_CFG={
-  name:"",
-  lang:"",
-  quote:"",
+  name:"Coder",
+  lang:"Python 3",
+  quote:"Consistency beats intensity — master the patterns, one problem at a time.",
   startDate:todayISO(),
   weekdayPace:2,
   weekendPace:4
@@ -561,7 +606,7 @@ let CFG=(()=>{
   }catch{return null;}
 })();
 
-function activeCfg(){return CFG||DEFAULT_CFG;}
+function activeCfg(){return (CFG&&CFG.name)?CFG:DEFAULT_CFG;}
 
 /* ── Dynamic Schedule & Date Calculation ────────────────────────── */
 const MONTHS=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -576,12 +621,17 @@ function computeSchedule(){
   const cfg=activeCfg();
   const parts=(cfg.startDate||todayISO()).split("-").map(Number);
   let curDate=new Date(parts[0],(parts[1]||1)-1,parts[2]||1);
+  curDate.setHours(0,0,0,0);
   const wkday=Math.max(1,Number(cfg.weekdayPace)||2);
   const wkend=Math.max(1,Number(cfg.weekendPace)||4);
   const capFor=d=>(d.getDay()===0||d.getDay()===6)?wkend:wkday;
 
   let remCap=capFor(curDate);
   const overallStart=new Date(curDate.getTime());
+  const now=new Date();
+  now.setHours(0,0,0,0);
+  const nowMs=now.getTime();
+  let foundCurrWid=null;
 
   PHASES.forEach(ph=>{
     let phStart=null;
@@ -600,11 +650,28 @@ function computeSchedule(){
         phEnd=new Date(curDate.getTime());
         remCap--;
       });
+      w.startMs=wStart.getTime();
+      w.endMs=wEnd.getTime();
+      if(!foundCurrWid && nowMs>=w.startMs && nowMs<=w.endMs){
+        foundCurrWid=w.wid;
+      }
       w.label=`${w.baseLabel} · ${fmtDate(wStart)} – ${fmtDate(wEnd)} (${fmtDay(wStart)}–${fmtDay(wEnd)} · ${w.problems.length} probs)`;
     });
     const pDays=diffDaysInclusive(phStart,phEnd);
     ph.dateRange=`${fmtDate(phStart)} – ${fmtDate(phEnd)} (${pDays} days · M–F: ${wkday}/day, Sat–Sun: ${wkend}/day)`;
   });
+
+  /* Fallback if today is outside the schedule: pick first sprint with unsolved problems */
+  if(!foundCurrWid){
+    for(const ph of PHASES){
+      for(const w of ph.weeks){
+        if(w.problems.some(p=>!S[p.id])){foundCurrWid=w.wid;break;}
+      }
+      if(foundCurrWid)break;
+    }
+  }
+  if(!foundCurrWid)foundCurrWid=PHASES[0].weeks[0].wid;
+  _currentWid=foundCurrWid;
 
   const overallEnd=new Date(curDate.getTime());
   const totalDays=diffDaysInclusive(overallStart,overallEnd);
@@ -640,9 +707,11 @@ function renderPhases(){
     let h=`<div class="phase-header"><div><div class="phase-eyebrow">${ph.num}</div><div class="phase-title">${ph.title}</div><div class="phase-goal">${ph.goal}</div><div class="phase-dates">${ph.dateRange} &middot; ${total} problems</div></div><div class="phase-right"><div class="phase-pct-num" id="pct-${ph.id}">${done}/${total}</div><div class="phase-bar"><div class="phase-fill" id="fill-${ph.id}" style="width:${pct}%;background:${color}"></div></div></div></div>`;
     ph.weeks.forEach(week=>{
       const wDone=week.problems.filter(p=>S[p.id]).length;
-      h+=`<div class="week-section" data-wid="${week.wid}"><div class="week-label">${week.label} <span class="week-count" id="wc-${week.wid}">${wDone}/${week.problems.length}</span></div><table class="prob-table"><thead><tr><th style="width:28px"></th><th style="width:50px">LC#</th><th>Problem</th><th>Pattern</th><th style="text-align:right">Link</th></tr></thead><tbody>${week.problems.map(prob=>{const done=!!S[prob.id];return`<tr class="prob-row${done?" done":""}" id="row-${prob.id}" onclick="toggleProb('${prob.id}','${ph.id}','${week.wid}')"><td class="prob-check-cell"><div class="prob-check">${done?CK13:""}</div></td><td class="prob-num-cell">${prob.lc}</td><td class="prob-name">${prob.label}<span class="diff-dot diff-${prob.diff}"></span>${prob.hint?'<div class="prob-hint">'+prob.hint+'</div>':''}</td><td class="prob-pattern">${prob.pattern}</td><td class="prob-lc-cell"><a class="lc-link" href="https://leetcode.com/problems/${prob.slug}/" target="_blank" rel="noopener" onclick="event.stopPropagation()">#${prob.lc}</a></td></tr>`;}).join("")}</tbody></table></div>`;
+      const isCurr=(week.wid===_currentWid);
+      const currBadge=isCurr?`<span class="week-curr-pill">Current</span>`:"";
+      h+=`<div class="week-section" data-wid="${week.wid}"><div class="week-label">${week.label}${currBadge} <span class="week-count" id="wc-${week.wid}">${wDone}/${week.problems.length}</span></div><table class="prob-table"><thead><tr><th style="width:28px"></th><th style="width:50px">LC#</th><th>Problem</th><th>Pattern</th><th style="text-align:right">Link</th></tr></thead><tbody>${week.problems.map(prob=>{const done=!!S[prob.id];const safePat=prob.pattern.replace(/'/g,"\\'");return`<tr class="prob-row${done?" done":""}" id="row-${prob.id}" onclick="toggleProb('${prob.id}','${ph.id}','${week.wid}')"><td class="prob-check-cell"><div class="prob-check">${done?CK13:""}</div></td><td class="prob-num-cell">${prob.lc}</td><td class="prob-name">${prob.label}<span class="diff-dot diff-${prob.diff}"></span>${prob.hint?'<div class="prob-hint">'+prob.hint+'</div>':''}</td><td class="prob-pattern"><span class="pattern-tag" title="Filter by ${prob.pattern}" onclick="filterByPattern(event,'${safePat}')">${prob.pattern}</span></td><td class="prob-lc-cell"><a class="lc-link" href="https://leetcode.com/problems/${prob.slug}/" target="_blank" rel="noopener" onclick="event.stopPropagation()">#${prob.lc}</a></td></tr>`;}).join("")}</tbody></table></div>`;
     });
-    if(pi<PHASES.length-1)h+=`<hr class="phase-divider">`;
+    if(pi<PHASES.length-1)h+=`<hr class="phase-divider" id="div-${ph.id}">`;
     el.innerHTML=h;root.appendChild(el);
   });
 }
@@ -656,6 +725,29 @@ function renderSidebar(){
     a.onclick=()=>{if(window.innerWidth<=700){document.querySelector(".sidebar").classList.remove("open");document.getElementById("sidebarOverlay").classList.remove("open");}};
     nav.appendChild(a);
   });
+}
+
+function updateChipCounts(){
+  const all=allProblems();
+  const easyCount=all.filter(p=>p.diff==="e").length;
+  const medCount=all.filter(p=>p.diff==="m").length;
+  const hardCount=all.filter(p=>p.diff==="h").length;
+  const doneCount=all.filter(p=>!!S[p.id]).length;
+  const todoCount=all.length-doneCount;
+
+  let thisWeekCount=0;
+  PHASES.forEach(ph=>ph.weeks.forEach(w=>{
+    if(w.wid===_currentWid)thisWeekCount=w.problems.length;
+  }));
+
+  const setTxt=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val;};
+  setTxt("chipCountAll",all.length);
+  setTxt("chipCountE",easyCount);
+  setTxt("chipCountM",medCount);
+  setTxt("chipCountH",hardCount);
+  setTxt("chipCountTodo",todoCount);
+  setTxt("chipCountDone",doneCount);
+  setTxt("chipCountThisWeek",thisWeekCount);
 }
 
 function renderGlobalStats(){
@@ -673,6 +765,7 @@ function renderGlobalStats(){
   document.getElementById("overallFill").style.width=pct+"%";
   document.getElementById("overallPct").textContent=`${d} / ${tt}`;
   document.getElementById("topCount").textContent=`${d} / ${tt} solved`;
+  updateChipCounts();
 }
 
 function renderAll(){
@@ -680,6 +773,7 @@ function renderAll(){
   renderPhases();
   renderSidebar();
   renderGlobalStats();
+  applyFilter();
 }
 
 function toggleProb(id,phId,wid){
@@ -691,13 +785,12 @@ function toggleProb(id,phId,wid){
   const ph=PHASES.find(p=>p.id===phId);
   if(ph){const{done:pd,total:pt,pct}=phaseProg(ph);const pe=document.getElementById(`pct-${phId}`);const fe=document.getElementById(`fill-${phId}`);if(pe)pe.textContent=`${pd}/${pt}`;if(fe)fe.style.width=pct+"%";}
   renderSidebar();renderGlobalStats();
-  if(typeof applyFilter==="function")applyFilter();
+  applyFilter();
 }
 
 /* ── Setup Modal Handlers ───────────────────────────────────────── */
 function openSetup(){
   if(CFG){
-    /* Re-open: populate with saved values */
     document.getElementById("inpName").value=CFG.name;
     document.getElementById("inpLang").value=CFG.lang;
     document.getElementById("inpQuote").value=CFG.quote;
@@ -705,7 +798,6 @@ function openSetup(){
     document.getElementById("inpWeekday").value=CFG.weekdayPace;
     document.getElementById("inpWeekend").value=CFG.weekendPace;
   } else {
-    /* First time: leave blank so user types their own */
     document.getElementById("inpName").value="";
     document.getElementById("inpLang").value="";
     document.getElementById("inpQuote").value="";
@@ -744,88 +836,137 @@ function confirmReset(){if(confirm("Reset all solved problem progress? This cann
 const TK="loki_lc150_theme_v1";
 function applyTheme(light){document.documentElement.classList.toggle("light",light);const btn=document.getElementById("themeBtn");if(btn)btn.textContent=light?"☽":"☀︎";}
 function toggleTheme(){const isL=document.documentElement.classList.contains("light");localStorage.setItem(TK,isL?"dark":"light");applyTheme(!isL);}
-applyTheme(localStorage.getItem(TK)==="light");
-renderAll();
-if(!CFG){openSetup();}
 
 /* ── Search & Filter Logic ──────────────────────────────────────── */
-let _activeDiff="all";
-let _activeStatus="all";
-let _searchQ="";
+function syncFilterButtonsUI(){
+  document.querySelectorAll("#diffChips .chip").forEach(c=>{
+    const d=c.dataset.diff;
+    c.className="chip"+(d===_activeDiff?" active-"+d:"");
+  });
+  document.querySelectorAll("#statusChips .chip").forEach(c=>{
+    const s=c.dataset.status;
+    c.className="chip"+(s===_activeStatus?" active-"+(s==="all"?"all":s):"");
+  });
+  const twBtn=document.getElementById("chipThisWeek");
+  if(twBtn)twBtn.classList.toggle("active-week",_thisWeekOnly);
+
+  const hasSearch=_searchQ.length>0;
+  const clearSearchBtn=document.getElementById("searchClear");
+  const kbdBadge=document.getElementById("searchKbd");
+  if(clearSearchBtn)clearSearchBtn.classList.toggle("visible",hasSearch);
+  if(kbdBadge)kbdBadge.classList.toggle("hidden",hasSearch);
+
+  const isFiltered=(_activeDiff!=="all"||_activeStatus!=="all"||_thisWeekOnly||hasSearch);
+  const resetBtn=document.getElementById("resetFiltersBtn");
+  if(resetBtn)resetBtn.classList.toggle("visible",isFiltered);
+}
 
 function setDiff(d){
-  _activeDiff=d;
-  document.querySelectorAll("#diffChips .chip").forEach(c=>{
-    c.className="chip"+(c.dataset.diff===d?" active-"+d:"");
-  });
+  /* Clicking an already-active specific difficulty toggles back to 'all' */
+  _activeDiff=(_activeDiff===d && d!=="all")?"all":d;
   applyFilter();
 }
 
 function setStatus(s){
-  _activeStatus=s;
-  document.querySelectorAll("#statusChips .chip").forEach(c=>{
-    const key=c.dataset.status;
-    c.className="chip"+(key===s?" active-"+(s==="all"?"all":s):"");
-  });
+  /* Clicking an already-active specific status toggles back to 'all' */
+  _activeStatus=(_activeStatus===s && s!=="all")?"all":s;
+  applyFilter();
+}
+
+function toggleThisWeek(){
+  _thisWeekOnly=!_thisWeekOnly;
   applyFilter();
 }
 
 function onSearch(v){
   _searchQ=v.toLowerCase().trim();
-  document.getElementById("searchClear").classList.toggle("visible",v.length>0);
   applyFilter();
 }
 
 function clearSearch(){
-  document.getElementById("searchInp").value="";
+  const inp=document.getElementById("searchInp");
+  if(inp)inp.value="";
   _searchQ="";
-  document.getElementById("searchClear").classList.remove("visible");
+  applyFilter();
+}
+
+function filterByPattern(e,pattern){
+  e.stopPropagation();
+  const inp=document.getElementById("searchInp");
+  const target=pattern.toLowerCase();
+  if(_searchQ===target){
+    clearSearch();
+  }else{
+    if(inp)inp.value=pattern;
+    _searchQ=target;
+    applyFilter();
+  }
+}
+
+function resetAllFilters(){
+  _activeDiff="all";
+  _activeStatus="all";
+  _thisWeekOnly=false;
+  _searchQ="";
+  const inp=document.getElementById("searchInp");
+  if(inp)inp.value="";
   applyFilter();
 }
 
 function applyFilter(){
-  const all=allProblems();
+  syncFilterButtonsUI();
+  const totalCount=allProblems().length;
   let matchCount=0;
+  const cleanQ=_searchQ.replace(/^#/,"");
 
   PHASES.forEach(ph=>{
+    let phaseVisibleWeeks=0;
     ph.weeks.forEach(w=>{
       let weekVisible=0;
+      const matchWeek=(!_thisWeekOnly || w.wid===_currentWid);
+
       w.problems.forEach(p=>{
         const row=document.getElementById("row-"+p.id);
         if(!row)return;
         const matchDiff=(_activeDiff==="all"||p.diff===_activeDiff);
         const isDone=!!S[p.id];
         const matchStatus=(_activeStatus==="all")||((_activeStatus==="done")===isDone);
-        const label=(p.label+" "+p.pattern).toLowerCase();
-        const matchSearch=(!_searchQ||label.includes(_searchQ));
-        const visible=matchDiff&&matchStatus&&matchSearch;
+
+        let matchSearch=true;
+        if(_searchQ){
+          const hay=(p.label+" "+p.pattern+" "+(p.hint||"")+" #"+p.lc+" "+p.lc).toLowerCase();
+          matchSearch=hay.includes(_searchQ)||(cleanQ&&p.lc===cleanQ);
+        }
+
+        const visible=matchWeek&&matchDiff&&matchStatus&&matchSearch;
         row.classList.toggle("filtered-out",!visible);
         if(visible){weekVisible++;matchCount++;}
       });
-      /* hide whole week section if nothing inside matches */
+
       const sec=document.querySelector(".week-section[data-wid='"+w.wid+"']");
       if(sec)sec.classList.toggle("hidden",weekVisible===0);
+      if(weekVisible>0)phaseVisibleWeeks++;
     });
+
+    const phBlock=document.getElementById(ph.id);
+    if(phBlock)phBlock.classList.toggle("hidden",phaseVisibleWeeks===0);
+    const phDiv=document.getElementById("div-"+ph.id);
+    if(phDiv)phDiv.classList.toggle("hidden",phaseVisibleWeeks===0);
   });
 
-  /* no-results message */
+  /* No-results state */
   const nr=document.getElementById("noResults");
   if(nr)nr.classList.toggle("visible",matchCount===0);
 
-  /* live count label */
+  /* Live count label */
   const fc=document.getElementById("filterCount");
-  const isFiltered=(_activeDiff!=="all"||_activeStatus!=="all"||_searchQ);
-  if(fc)fc.textContent=isFiltered?matchCount+" shown":"";
+  const isFiltered=(_activeDiff!=="all"||_activeStatus!=="all"||_thisWeekOnly||_searchQ.length>0);
+  if(fc){
+    fc.textContent=isFiltered?`${matchCount} of ${totalCount} shown`:`${totalCount} problems`;
+  }
 }
 
-/* Re-apply filter whenever phases are re-rendered */
-const _origRenderAll=renderAll;
-renderAll=function(){
-  _origRenderAll();
-  applyFilter();
-};
-
-/* Keyboard shortcut: press "/" to focus search */
+/* Keyboard shortcut: press "/" to focus search, "Escape" to clear/blur */
 document.addEventListener("keydown",function(e){
   const tag=document.activeElement?.tagName;
   if(e.key==="/"&&tag!=="INPUT"&&tag!=="TEXTAREA"){
@@ -837,6 +978,11 @@ document.addEventListener("keydown",function(e){
     if(document.activeElement===inp){inp.blur();clearSearch();}
   }
 });
+
+/* Boot */
+applyTheme(localStorage.getItem(TK)==="light");
+renderAll();
+if(!CFG){openSetup();}
     </script>
   </body>
 </html>
