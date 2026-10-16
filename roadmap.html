@@ -150,6 +150,35 @@
         .prob-hint{display:none}
         .form-grid{grid-template-columns:1fr}
       }
+
+      /* ── Search & Filter Bar ───────────────────────────────────── */
+      .filter-bar{padding:8px 36px;border-bottom:1px solid var(--border);background:var(--bg2);display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+      .search-wrap{position:relative;flex:1;min-width:180px;max-width:340px}
+      .search-ico{position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--text3);pointer-events:none}
+      .search-inp{width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:6px;padding:5px 10px 5px 30px;color:var(--text);font-family:"DM Sans",sans-serif;font-size:12.5px;outline:none;transition:border-color .15s}
+      .search-inp:focus{border-color:var(--py)}
+      .search-inp::placeholder{color:var(--text3)}
+      .search-clear{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px;line-height:1;padding:0;display:none}
+      .search-clear.visible{display:block}
+      .filter-chips{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+      .chip{font-family:"Geist Mono",monospace;font-size:10.5px;border:1px solid var(--border2);border-radius:4px;padding:3px 9px;cursor:pointer;color:var(--text3);background:var(--bg);transition:all .14s;white-space:nowrap;user-select:none}
+      .chip:hover{border-color:var(--text2);color:var(--text)}
+      .chip.active-all{border-color:var(--accent);color:var(--accent);background:rgba(228,228,231,.08)}
+      .chip.active-e{border-color:var(--easy);color:var(--easy);background:rgba(34,197,94,.08)}
+      .chip.active-m{border-color:var(--med);color:var(--med);background:rgba(245,158,11,.08)}
+      .chip.active-h{border-color:var(--hard);color:var(--hard);background:rgba(239,68,68,.08)}
+      .chip.active-done{border-color:var(--py);color:var(--py);background:rgba(59,130,246,.08)}
+      .chip.active-undone{border-color:var(--text2);color:var(--text2);background:rgba(212,212,216,.08)}
+      .filter-divider{width:1px;height:18px;background:var(--border2);flex-shrink:0;margin:0 2px}
+      .filter-count{font-family:"Geist Mono",monospace;font-size:10px;color:var(--text3);white-space:nowrap;margin-left:4px}
+      .no-results{padding:48px;text-align:center;color:var(--text3);font-size:13.5px;display:none}
+      .no-results.visible{display:block}
+      .week-section.hidden{display:none}
+      .prob-row.filtered-out{display:none}
+      @media(max-width:700px){
+        .filter-bar{padding:8px 14px}
+        .search-wrap{max-width:100%;flex:unset;width:100%}
+      }
     </style>
   </head>
   <body>
@@ -221,6 +250,30 @@
           <button class="tb-btn theme-btn" id="themeBtn" onclick="toggleTheme()">☀︎</button>
         </div>
       </div>
+
+      <!-- Search & Filter Bar -->
+      <div class="filter-bar" id="filterBar">
+        <div class="search-wrap">
+          <span class="search-ico">⌕</span>
+          <input class="search-inp" id="searchInp" type="text" placeholder="Search problems, patterns…" oninput="onSearch(this.value)" autocomplete="off" spellcheck="false" />
+          <button class="search-clear" id="searchClear" onclick="clearSearch()" title="Clear">✕</button>
+        </div>
+        <div class="filter-chips" id="diffChips">
+          <span class="chip active-all" data-diff="all" onclick="setDiff('all')">All</span>
+          <span class="chip" data-diff="e" onclick="setDiff('e')">● Easy</span>
+          <span class="chip" data-diff="m" onclick="setDiff('m')">● Med</span>
+          <span class="chip" data-diff="h" onclick="setDiff('h')">● Hard</span>
+        </div>
+        <div class="filter-divider"></div>
+        <div class="filter-chips" id="statusChips">
+          <span class="chip active-all" data-status="all" onclick="setStatus('all')">All Status</span>
+          <span class="chip" data-status="undone" onclick="setStatus('undone')">Todo</span>
+          <span class="chip" data-status="done" onclick="setStatus('done')">Done</span>
+        </div>
+        <div class="filter-divider"></div>
+        <span class="filter-count" id="filterCount"></span>
+      </div>
+
       <div class="content">
         <div class="hero">
           <div class="hero-quote" id="heroQuote">"Consistency beats intensity — master the patterns, one problem at a time."</div>
@@ -257,6 +310,7 @@
           <div class="stat-box hard"><div class="stat-lbl">Hard</div><div class="stat-val" id="gs_hard">0</div><div class="stat-sub" id="gs_hard_t">/ 0</div></div>
         </div>
         <div id="phasesRoot"></div>
+        <div class="no-results" id="noResults">No problems match your search or filters.</div>
       </div>
     </main>
     <script>
@@ -489,9 +543,9 @@ function todayISO(){
 }
 
 const DEFAULT_CFG={
-  name:"Loki",
-  lang:"Python 3",
-  quote:"Consistency beats intensity — master the patterns, one problem at a time.",
+  name:"",
+  lang:"",
+  quote:"",
   startDate:todayISO(),
   weekdayPace:2,
   weekendPace:4
@@ -586,7 +640,7 @@ function renderPhases(){
     let h=`<div class="phase-header"><div><div class="phase-eyebrow">${ph.num}</div><div class="phase-title">${ph.title}</div><div class="phase-goal">${ph.goal}</div><div class="phase-dates">${ph.dateRange} &middot; ${total} problems</div></div><div class="phase-right"><div class="phase-pct-num" id="pct-${ph.id}">${done}/${total}</div><div class="phase-bar"><div class="phase-fill" id="fill-${ph.id}" style="width:${pct}%;background:${color}"></div></div></div></div>`;
     ph.weeks.forEach(week=>{
       const wDone=week.problems.filter(p=>S[p.id]).length;
-      h+=`<div class="week-section"><div class="week-label">${week.label} <span class="week-count" id="wc-${week.wid}">${wDone}/${week.problems.length}</span></div><table class="prob-table"><thead><tr><th style="width:28px"></th><th style="width:50px">LC#</th><th>Problem</th><th>Pattern</th><th style="text-align:right">Link</th></tr></thead><tbody>${week.problems.map(prob=>{const done=!!S[prob.id];return`<tr class="prob-row${done?" done":""}" id="row-${prob.id}" onclick="toggleProb('${prob.id}','${ph.id}','${week.wid}')"><td class="prob-check-cell"><div class="prob-check">${done?CK13:""}</div></td><td class="prob-num-cell">${prob.lc}</td><td class="prob-name">${prob.label}<span class="diff-dot diff-${prob.diff}"></span>${prob.hint?'<div class="prob-hint">'+prob.hint+'</div>':''}</td><td class="prob-pattern">${prob.pattern}</td><td class="prob-lc-cell"><a class="lc-link" href="https://leetcode.com/problems/${prob.slug}/" target="_blank" rel="noopener" onclick="event.stopPropagation()">#${prob.lc}</a></td></tr>`;}).join("")}</tbody></table></div>`;
+      h+=`<div class="week-section" data-wid="${week.wid}"><div class="week-label">${week.label} <span class="week-count" id="wc-${week.wid}">${wDone}/${week.problems.length}</span></div><table class="prob-table"><thead><tr><th style="width:28px"></th><th style="width:50px">LC#</th><th>Problem</th><th>Pattern</th><th style="text-align:right">Link</th></tr></thead><tbody>${week.problems.map(prob=>{const done=!!S[prob.id];return`<tr class="prob-row${done?" done":""}" id="row-${prob.id}" onclick="toggleProb('${prob.id}','${ph.id}','${week.wid}')"><td class="prob-check-cell"><div class="prob-check">${done?CK13:""}</div></td><td class="prob-num-cell">${prob.lc}</td><td class="prob-name">${prob.label}<span class="diff-dot diff-${prob.diff}"></span>${prob.hint?'<div class="prob-hint">'+prob.hint+'</div>':''}</td><td class="prob-pattern">${prob.pattern}</td><td class="prob-lc-cell"><a class="lc-link" href="https://leetcode.com/problems/${prob.slug}/" target="_blank" rel="noopener" onclick="event.stopPropagation()">#${prob.lc}</a></td></tr>`;}).join("")}</tbody></table></div>`;
     });
     if(pi<PHASES.length-1)h+=`<hr class="phase-divider">`;
     el.innerHTML=h;root.appendChild(el);
@@ -637,17 +691,28 @@ function toggleProb(id,phId,wid){
   const ph=PHASES.find(p=>p.id===phId);
   if(ph){const{done:pd,total:pt,pct}=phaseProg(ph);const pe=document.getElementById(`pct-${phId}`);const fe=document.getElementById(`fill-${phId}`);if(pe)pe.textContent=`${pd}/${pt}`;if(fe)fe.style.width=pct+"%";}
   renderSidebar();renderGlobalStats();
+  if(typeof applyFilter==="function")applyFilter();
 }
 
 /* ── Setup Modal Handlers ───────────────────────────────────────── */
 function openSetup(){
-  const c=activeCfg();
-  document.getElementById("inpName").value=c.name;
-  document.getElementById("inpLang").value=c.lang;
-  document.getElementById("inpQuote").value=c.quote;
-  document.getElementById("inpStart").value=c.startDate||todayISO();
-  document.getElementById("inpWeekday").value=c.weekdayPace;
-  document.getElementById("inpWeekend").value=c.weekendPace;
+  if(CFG){
+    /* Re-open: populate with saved values */
+    document.getElementById("inpName").value=CFG.name;
+    document.getElementById("inpLang").value=CFG.lang;
+    document.getElementById("inpQuote").value=CFG.quote;
+    document.getElementById("inpStart").value=CFG.startDate||todayISO();
+    document.getElementById("inpWeekday").value=CFG.weekdayPace;
+    document.getElementById("inpWeekend").value=CFG.weekendPace;
+  } else {
+    /* First time: leave blank so user types their own */
+    document.getElementById("inpName").value="";
+    document.getElementById("inpLang").value="";
+    document.getElementById("inpQuote").value="";
+    document.getElementById("inpStart").value=todayISO();
+    document.getElementById("inpWeekday").value="";
+    document.getElementById("inpWeekend").value="";
+  }
   document.getElementById("setupModal").classList.add("open");
 }
 
@@ -662,9 +727,9 @@ function closeSetup(){
 function saveSetup(e){
   e.preventDefault();
   CFG={
-    name:document.getElementById("inpName").value.trim()||"Coder",
-    lang:document.getElementById("inpLang").value.trim()||"Python 3",
-    quote:document.getElementById("inpQuote").value.trim()||DEFAULT_CFG.quote,
+    name:document.getElementById("inpName").value.trim(),
+    lang:document.getElementById("inpLang").value.trim(),
+    quote:document.getElementById("inpQuote").value.trim()||"Consistency beats intensity — master the patterns, one problem at a time.",
     startDate:document.getElementById("inpStart").value||todayISO(),
     weekdayPace:Math.max(1,parseInt(document.getElementById("inpWeekday").value,10)||2),
     weekendPace:Math.max(1,parseInt(document.getElementById("inpWeekend").value,10)||4)
@@ -682,6 +747,96 @@ function toggleTheme(){const isL=document.documentElement.classList.contains("li
 applyTheme(localStorage.getItem(TK)==="light");
 renderAll();
 if(!CFG){openSetup();}
+
+/* ── Search & Filter Logic ──────────────────────────────────────── */
+let _activeDiff="all";
+let _activeStatus="all";
+let _searchQ="";
+
+function setDiff(d){
+  _activeDiff=d;
+  document.querySelectorAll("#diffChips .chip").forEach(c=>{
+    c.className="chip"+(c.dataset.diff===d?" active-"+d:"");
+  });
+  applyFilter();
+}
+
+function setStatus(s){
+  _activeStatus=s;
+  document.querySelectorAll("#statusChips .chip").forEach(c=>{
+    const key=c.dataset.status;
+    c.className="chip"+(key===s?" active-"+(s==="all"?"all":s):"");
+  });
+  applyFilter();
+}
+
+function onSearch(v){
+  _searchQ=v.toLowerCase().trim();
+  document.getElementById("searchClear").classList.toggle("visible",v.length>0);
+  applyFilter();
+}
+
+function clearSearch(){
+  document.getElementById("searchInp").value="";
+  _searchQ="";
+  document.getElementById("searchClear").classList.remove("visible");
+  applyFilter();
+}
+
+function applyFilter(){
+  const all=allProblems();
+  let matchCount=0;
+
+  PHASES.forEach(ph=>{
+    ph.weeks.forEach(w=>{
+      let weekVisible=0;
+      w.problems.forEach(p=>{
+        const row=document.getElementById("row-"+p.id);
+        if(!row)return;
+        const matchDiff=(_activeDiff==="all"||p.diff===_activeDiff);
+        const isDone=!!S[p.id];
+        const matchStatus=(_activeStatus==="all")||((_activeStatus==="done")===isDone);
+        const label=(p.label+" "+p.pattern).toLowerCase();
+        const matchSearch=(!_searchQ||label.includes(_searchQ));
+        const visible=matchDiff&&matchStatus&&matchSearch;
+        row.classList.toggle("filtered-out",!visible);
+        if(visible){weekVisible++;matchCount++;}
+      });
+      /* hide whole week section if nothing inside matches */
+      const sec=document.querySelector(".week-section[data-wid='"+w.wid+"']");
+      if(sec)sec.classList.toggle("hidden",weekVisible===0);
+    });
+  });
+
+  /* no-results message */
+  const nr=document.getElementById("noResults");
+  if(nr)nr.classList.toggle("visible",matchCount===0);
+
+  /* live count label */
+  const fc=document.getElementById("filterCount");
+  const isFiltered=(_activeDiff!=="all"||_activeStatus!=="all"||_searchQ);
+  if(fc)fc.textContent=isFiltered?matchCount+" shown":"";
+}
+
+/* Re-apply filter whenever phases are re-rendered */
+const _origRenderAll=renderAll;
+renderAll=function(){
+  _origRenderAll();
+  applyFilter();
+};
+
+/* Keyboard shortcut: press "/" to focus search */
+document.addEventListener("keydown",function(e){
+  const tag=document.activeElement?.tagName;
+  if(e.key==="/"&&tag!=="INPUT"&&tag!=="TEXTAREA"){
+    e.preventDefault();
+    document.getElementById("searchInp").focus();
+  }
+  if(e.key==="Escape"){
+    const inp=document.getElementById("searchInp");
+    if(document.activeElement===inp){inp.blur();clearSearch();}
+  }
+});
     </script>
   </body>
 </html>
