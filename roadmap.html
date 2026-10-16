@@ -3,8 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>LeetCode 150 · Python Roadmap</title>
-    <meta name="description" content="LeetCode 150 Python problem roadmap — Aug 14 to Sep 30, 2026. Phase-wise tracker with progress, Python hints, and progressive Easy → Medium → Hard pattern momentum." />
+    <title>LeetCode 150 · Roadmap</title>
+    <meta name="description" content="Customizable LeetCode 150 problem roadmap — Phase-wise tracker with progress, hints, and progressive Easy → Medium → Hard pattern momentum." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@300;400;500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet" />
     <style>
@@ -53,6 +53,7 @@
       .theme-btn{padding:3px 8px;font-size:14px}
       .content{padding:40px 36px 100px;max-width:900px}
       .hero{margin-bottom:40px;padding-bottom:28px;border-bottom:1px solid var(--border)}
+      .hero-quote{font-size:13px;color:var(--text2);font-style:italic;border-left:2px solid var(--py);padding:2px 0 2px 12px;margin-bottom:16px}
       .hero-eyebrow{font-family:"Geist Mono",monospace;font-size:10px;color:var(--text3);letter-spacing:.14em;text-transform:uppercase;margin-bottom:8px}
       .hero-title{font-size:28px;font-weight:600;letter-spacing:-.02em;line-height:1.2;margin-bottom:5px}
       .hero-title span{color:var(--py)}
@@ -118,6 +119,24 @@
       .mobile-menu-btn{display:none;background:none;border:none;color:var(--text);font-size:20px;cursor:pointer;padding:0}
       .topbar-left{display:flex;align-items:center;gap:12px}
       .sidebar-overlay{display:none}
+
+      /* Setup Modal Styles (matches existing clean UI) */
+      .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.72);backdrop-filter:blur(6px);z-index:200;display:none;align-items:center;justify-content:center;padding:16px}
+      .modal-backdrop.open{display:flex}
+      .modal-card{background:var(--bg2);border:1px solid var(--border2);border-radius:10px;width:100%;max-width:460px;padding:24px;box-shadow:0 20px 50px rgba(0,0,0,.5)}
+      .modal-eyebrow{font-family:"Geist Mono",monospace;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px}
+      .modal-title{font-size:18px;font-weight:600;color:var(--text);margin-bottom:4px}
+      .modal-sub{font-size:12.5px;color:var(--text3);margin-bottom:18px}
+      .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+      .form-group{display:flex;flex-direction:column;gap:4px}
+      .form-group.full{grid-column:1 / -1}
+      .form-lbl{font-family:"Geist Mono",monospace;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em}
+      .form-inp{background:var(--bg);border:1px solid var(--border2);border-radius:6px;padding:8px 10px;color:var(--text);font-family:"DM Sans",sans-serif;font-size:13.5px;outline:none;transition:border-color .15s}
+      .form-inp:focus{border-color:var(--py)}
+      .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:20px;padding-top:14px;border-top:1px solid var(--border)}
+      .btn-primary{background:var(--py);color:#fff;border:none;border-radius:5px;padding:6px 14px;font-size:12.5px;font-weight:500;cursor:pointer;font-family:"DM Sans",sans-serif;transition:opacity .15s}
+      .btn-primary:hover{opacity:.9}
+
       @media(max-width:700px){
         .sidebar{transform:translateX(-100%);transition:transform .3s ease}
         .sidebar.open{transform:translateX(0)}
@@ -129,14 +148,15 @@
         .topbar{padding:10px 16px}
         .prob-pattern{display:none}
         .prob-hint{display:none}
+        .form-grid{grid-template-columns:1fr}
       }
     </style>
   </head>
   <body>
     <nav class="sidebar">
       <div class="sb-brand">
-        <div class="sb-name">Loki · LC 150</div>
-        <div class="sb-goal">Aug 14 – Sep 30 · Python</div>
+        <div class="sb-name" id="sbName">Coder · LC 150</div>
+        <div class="sb-goal" id="sbGoal">Schedule · Python</div>
       </div>
       <div class="sb-nav" id="sbNav"></div>
       <div class="sb-footer">
@@ -146,43 +166,88 @@
       </div>
     </nav>
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <!-- One-time / Anytime Setup Modal -->
+    <div class="modal-backdrop" id="setupModal">
+      <div class="modal-card">
+        <div class="modal-eyebrow">One-Time Setup</div>
+        <div class="modal-title">Customize Your LC 150 Roadmap</div>
+        <div class="modal-sub">Set your name, language, daily pace, and start date. All phase &amp; weekly dates calculate automatically.</div>
+        <form id="setupForm" onsubmit="saveSetup(event)">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-lbl" for="inpName">Your Name</label>
+              <input class="form-inp" id="inpName" type="text" placeholder="e.g. Loki" required />
+            </div>
+            <div class="form-group">
+              <label class="form-lbl" for="inpLang">Language</label>
+              <input class="form-inp" id="inpLang" type="text" placeholder="e.g. Python 3, C++, Java" required />
+            </div>
+            <div class="form-group full">
+              <label class="form-lbl" for="inpQuote">Top One-Liner Quote</label>
+              <input class="form-inp" id="inpQuote" type="text" placeholder="e.g. Consistency beats intensity — master the patterns, one day at a time." required />
+            </div>
+            <div class="form-group full">
+              <label class="form-lbl" for="inpStart">Start Date</label>
+              <input class="form-inp" id="inpStart" type="date" required />
+            </div>
+            <div class="form-group">
+              <label class="form-lbl" for="inpWeekday">Weekday Pace (Mon–Fri)</label>
+              <input class="form-inp" id="inpWeekday" type="number" min="1" max="25" required />
+            </div>
+            <div class="form-group">
+              <label class="form-lbl" for="inpWeekend">Weekend Pace (Sat–Sun)</label>
+              <input class="form-inp" id="inpWeekend" type="number" min="1" max="25" required />
+            </div>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="tb-btn" onclick="closeSetup()">Cancel</button>
+            <button type="submit" class="btn-primary">Save &amp; Generate Dates</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
     <main class="main">
       <div class="topbar">
         <div class="topbar-left">
           <button class="mobile-menu-btn" id="menuBtn" onclick="toggleSidebar()">☰</button>
-          <div class="topbar-title">LeetCode 150 · Python Roadmap</div>
+          <div class="topbar-title" id="topbarTitle">LeetCode 150 · Roadmap</div>
         </div>
         <div class="topbar-right">
           <div class="topbar-count" id="topCount">0 / 150 solved</div>
+          <button class="tb-btn" onclick="openSetup()">⚙ Setup</button>
           <button class="tb-btn" id="resetBtn" onclick="confirmReset()">Reset</button>
           <button class="tb-btn theme-btn" id="themeBtn" onclick="toggleTheme()">☀︎</button>
         </div>
       </div>
       <div class="content">
         <div class="hero">
-          <div class="hero-eyebrow">Progress Tracker · 2026</div>
-          <div class="hero-title">LeetCode 150<br/><span>Python</span> Grind.</div>
-          <div class="hero-sub">Mon–Fri: 2/day · Sat–Sun: 4/day (Weekend Deep-Dive) · Aug 14 → Sep 30</div>
+          <div class="hero-quote" id="heroQuote">"Consistency beats intensity — master the patterns, one problem at a time."</div>
+          <div class="hero-eyebrow" id="heroEyebrow">Progress Tracker · 2026</div>
+          <div class="hero-title">LeetCode 150<br/><span id="heroLang">Python</span> Grind.</div>
+          <div class="hero-sub" id="heroSub">Mon–Fri: 2/day · Sat–Sun: 4/day (Weekend Deep-Dive)</div>
           <div class="meta-row">
-            <div class="meta-item"><div class="meta-lbl">User</div><div class="meta-val">Loki</div></div>
-            <div class="meta-item"><div class="meta-lbl">Language</div><div class="meta-val">Python 3</div></div>
+            <div class="meta-item"><div class="meta-lbl">User</div><div class="meta-val" id="metaUser">Coder</div></div>
+            <div class="meta-item"><div class="meta-lbl">Language</div><div class="meta-val" id="metaLang">Python 3</div></div>
             <div class="meta-item"><div class="meta-lbl">Problems</div><div class="meta-val">150</div></div>
-            <div class="meta-item"><div class="meta-lbl">Deadline</div><div class="meta-val">Sep 30</div></div>
-            <div class="meta-item"><div class="meta-lbl">Weekday Pace</div><div class="meta-val">2 / day (M–F)</div></div>
-            <div class="meta-item"><div class="meta-lbl">Weekend Pace</div><div class="meta-val">4 / day (Sat–Sun)</div></div>
+            <div class="meta-item"><div class="meta-lbl">Duration</div><div class="meta-val" id="metaDuration">—</div></div>
+            <div class="meta-item"><div class="meta-lbl">Weekday Pace</div><div class="meta-val" id="metaWeekday">2 / day (M–F)</div></div>
+            <div class="meta-item"><div class="meta-lbl">Weekend Pace</div><div class="meta-val" id="metaWeekend">4 / day (Sat–Sun)</div></div>
+            <div class="meta-item"><div class="meta-lbl">Weekly Pace</div><div class="meta-val" id="metaWeekly">18 / week</div></div>
             <div class="meta-item"><div class="meta-lbl">Pattern Ramp</div><div class="meta-val">Easy → Med → Hard</div></div>
           </div>
           <div class="res-row">
-            <a class="res-pill py" href="https://leetcode.com/studyplan/top-100-liked/" target="_blank">LC Top 100</a>
-            <a class="res-pill py" href="https://neetcode.io/roadmap" target="_blank">NeetCode 150</a>
-            <a class="res-pill py" href="https://www.techinterviewhandbook.org/grind75" target="_blank">Grind 75</a>
-            <a class="res-pill py" href="https://docs.python.org/3/library/collections.html" target="_blank">collections</a>
-            <a class="res-pill py" href="https://docs.python.org/3/library/heapq.html" target="_blank">heapq</a>
-            <a class="res-pill py" href="https://seanprashad.com/leetcode-patterns/" target="_blank">LC Patterns</a>
-            <a class="res-pill py" href="https://visualgo.net" target="_blank">VisuAlgo</a>
-            <a class="res-pill py" href="https://www.bigocheatsheet.com/" target="_blank">Big-O Sheet</a>
-            <a class="res-pill yt" href="https://www.youtube.com/@NeetCode" target="_blank">▶ NeetCode YT</a>
-            <a class="res-pill yt" href="https://www.youtube.com/@takeUforward" target="_blank">▶ Striver TUF</a>
+            <a class="res-pill py" href="https://leetcode.com/studyplan/top-100-liked/" target="_blank" rel="noopener">LC Top 100</a>
+            <a class="res-pill py" href="https://neetcode.io/roadmap" target="_blank" rel="noopener">NeetCode 150</a>
+            <a class="res-pill py" href="https://www.techinterviewhandbook.org/grind75" target="_blank" rel="noopener">Grind 75</a>
+            <a class="res-pill py" href="https://docs.python.org/3/library/collections.html" target="_blank" rel="noopener">collections</a>
+            <a class="res-pill py" href="https://docs.python.org/3/library/heapq.html" target="_blank" rel="noopener">heapq</a>
+            <a class="res-pill py" href="https://seanprashad.com/leetcode-patterns/" target="_blank" rel="noopener">LC Patterns</a>
+            <a class="res-pill py" href="https://visualgo.net" target="_blank" rel="noopener">VisuAlgo</a>
+            <a class="res-pill py" href="https://www.bigocheatsheet.com/" target="_blank" rel="noopener">Big-O Sheet</a>
+            <a class="res-pill yt" href="https://www.youtube.com/@NeetCode" target="_blank" rel="noopener">▶ NeetCode YT</a>
+            <a class="res-pill yt" href="https://www.youtube.com/@takeUforward" target="_blank" rel="noopener">▶ Striver TUF</a>
           </div>
         </div>
         <div class="stats-bar">
@@ -197,229 +262,322 @@
     <script>
 const CK13='<svg class="ck" width="8" height="6" viewBox="0 0 8 6" fill="none"><path d="M1 3L3 5L7 1" stroke="var(--check-fill)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const PHASE_COLORS=["var(--phase1)","var(--phase2)","var(--phase3)","var(--phase4)","var(--phase5)"];
+
+/* ── All 150 Problems with verified LeetCode slugs ────────────────── */
 const PHASES=[
-  /* ── PHASE 1 · Foundations (20 problems) ────────────────────────── */
+  /* ── PHASE 1 · Foundations (20 problems · 18 Easy + 2 Medium capstones) ─ */
   {
     id:"ph1",num:"Phase 1",title:"Foundations",
-    goal:"Arrays, Strings, Hashing — build your core Python muscle memory.",
-    dateRange:"Aug 7 – Aug 13 (20 problems)",
+    goal:"Arrays, Strings, Hashing — high-momentum Easy problems covering the exact core foundation patterns.",
     weeks:[
-      {label:"Week 0a · Aug 7 – Aug 11",wid:"w0a",problems:[
-        {id:"p1",lc:"1",label:"Two Sum",pattern:"HashMap",diff:"e",hint:"Dict stores complement: target - num. Single pass O(n)."},
-        {id:"p2",lc:"121",label:"Best Time to Buy & Sell Stock",pattern:"Sliding Min",diff:"e",hint:"Track min price so far; update max profit at each step."},
-        {id:"p3",lc:"217",label:"Contains Duplicate",pattern:"HashSet",diff:"e",hint:"Add seen elements to set; return True if already present."},
-        {id:"p4",lc:"238",label:"Product of Array Except Self",pattern:"Prefix/Suffix",diff:"m",hint:"Two passes: prefix products left-to-right, then suffix products."},
-        {id:"p5",lc:"53",label:"Maximum Subarray (Kadane's)",pattern:"Kadane",diff:"m",hint:"cur = max(num, cur + num), track running global max."},
-        {id:"p6",lc:"152",label:"Maximum Product Subarray",pattern:"DP",diff:"m",hint:"Track both max and min product (negatives flip sign)."},
-        {id:"p7",lc:"153",label:"Find Min in Rotated Sorted Array",pattern:"Binary Search",diff:"m",hint:"Binary search comparing mid to right boundary."},
-        {id:"p8",lc:"303",label:"Range Sum Query - Immutable",pattern:"Prefix Sum",diff:"e",hint:"Precompute prefix sums array for O(1) range queries."},
-        {id:"p9",lc:"560",label:"Subarray Sum Equals K",pattern:"Prefix+Hash",diff:"m",hint:"HashMap of prefix sums; check if prefix - k exists."},
-        {id:"p10",lc:"1480",label:"Running Sum of 1D Array",pattern:"Prefix Sum",diff:"e",hint:"In-place prefix accumulation: nums[i] += nums[i-1]."},
+      {baseLabel:"Week 1a",wid:"w0a",problems:[
+        {id:"p1",lc:"1",slug:"two-sum",label:"Two Sum",pattern:"HashMap",diff:"e",hint:"Dict stores complement: target - num. Single pass O(n)."},
+        {id:"p2",lc:"121",slug:"best-time-to-buy-and-sell-stock",label:"Best Time to Buy & Sell Stock",pattern:"Sliding Min",diff:"e",hint:"Track min price so far; update max profit at each step."},
+        {id:"p3",lc:"217",slug:"contains-duplicate",label:"Contains Duplicate",pattern:"HashSet",diff:"e",hint:"Add seen elements to set; return True if already present."},
+        {id:"p4",lc:"724",slug:"find-pivot-index",label:"Find Pivot Index",pattern:"Prefix/Suffix",diff:"e",hint:"Compare running left prefix sum with right suffix sum (total - left - num)."},
+        {id:"p5",lc:"1480",slug:"running-sum-of-1d-array",label:"Running Sum of 1D Array",pattern:"Prefix Sum",diff:"e",hint:"In-place prefix accumulation: nums[i] += nums[i-1]."},
+        {id:"p6",lc:"628",slug:"maximum-product-of-three-numbers",label:"Maximum Product of Three Numbers",pattern:"Array Product",diff:"e",hint:"Track 3 largest positives and 2 smallest negatives (two negatives flip sign)."},
+        {id:"p7",lc:"1752",slug:"check-if-array-is-sorted-and-rotated",label:"Check if Array Is Sorted and Rotated",pattern:"Rotated Array",diff:"e",hint:"Count rotation drop points where nums[i] > nums[(i+1)%n]; valid if drops <= 1."},
+        {id:"p8",lc:"303",slug:"range-sum-query-immutable",label:"Range Sum Query - Immutable",pattern:"Prefix Sum",diff:"e",hint:"Precompute prefix sums array for O(1) range queries."},
+        {id:"p9",lc:"2006",slug:"count-number-of-pairs-with-absolute-difference-k",label:"Count Pairs With Absolute Difference K",pattern:"Prefix/Hash",diff:"e",hint:"HashMap of frequencies; check if num - k or num + k already exists."},
+        {id:"p10",lc:"53",slug:"maximum-subarray",label:"Maximum Subarray (Kadane's)",pattern:"Kadane",diff:"m",hint:"cur = max(num, cur + num), track running global max."},
       ]},
-      {label:"Week 0b · Aug 12 – Aug 13",wid:"w0b",problems:[
-        {id:"p11",lc:"125",label:"Valid Palindrome",pattern:"Two Pointers",diff:"e",hint:"Two pointers, skip non-alphanumeric, compare lowercase."},
-        {id:"p12",lc:"242",label:"Valid Anagram",pattern:"HashMap",diff:"e",hint:"Counter comparison or sort both character arrays."},
-        {id:"p13",lc:"49",label:"Group Anagrams",pattern:"HashMap",diff:"m",hint:"Group by tuple(sorted(word)) or 26-char count tuple."},
-        {id:"p14",lc:"14",label:"Longest Common Prefix",pattern:"Strings",diff:"e",hint:"Vertical character comparison across all strings."},
-        {id:"p15",lc:"271",label:"Encode and Decode Strings",pattern:"Strings",diff:"m",hint:"Length-prefix encoding: '4#word' format."},
-        {id:"p16",lc:"169",label:"Majority Element",pattern:"Boyer-Moore",diff:"e",hint:"Boyer-Moore voting: count=0 switches candidate."},
-        {id:"p17",lc:"202",label:"Happy Number",pattern:"HashSet/Cycle",diff:"e",hint:"Floyd's or HashSet to detect loop in digit-square sums."},
-        {id:"p18",lc:"387",label:"First Unique Character in String",pattern:"HashMap",diff:"e",hint:"Counter, then return index of first char with count 1."},
-        {id:"p19",lc:"205",label:"Isomorphic Strings",pattern:"HashMap",diff:"e",hint:"Two dicts for consistent bidirectional character mapping."},
-        {id:"p20",lc:"409",label:"Longest Palindrome",pattern:"Counting",diff:"e",hint:"Sum pairs of char counts; add 1 if any odd count exists."},
+      {baseLabel:"Week 1b",wid:"w0b",problems:[
+        {id:"p11",lc:"125",slug:"valid-palindrome",label:"Valid Palindrome",pattern:"Two Pointers",diff:"e",hint:"Two pointers, skip non-alphanumeric, compare lowercase."},
+        {id:"p12",lc:"242",slug:"valid-anagram",label:"Valid Anagram",pattern:"HashMap",diff:"e",hint:"Counter comparison or sort both character arrays."},
+        {id:"p13",lc:"14",slug:"longest-common-prefix",label:"Longest Common Prefix",pattern:"Strings",diff:"e",hint:"Vertical character comparison across all strings."},
+        {id:"p14",lc:"929",slug:"unique-email-addresses",label:"Unique Email Addresses",pattern:"String Parsing",diff:"e",hint:"Split local & domain on '@'; ignore '+' suffix and strip '.' in local name."},
+        {id:"p15",lc:"169",slug:"majority-element",label:"Majority Element",pattern:"Boyer-Moore",diff:"e",hint:"Boyer-Moore voting: count=0 switches candidate."},
+        {id:"p16",lc:"202",slug:"happy-number",label:"Happy Number",pattern:"HashSet/Cycle",diff:"e",hint:"Floyd's or HashSet to detect loop in digit-square sums."},
+        {id:"p17",lc:"387",slug:"first-unique-character-in-a-string",label:"First Unique Character in a String",pattern:"HashMap",diff:"e",hint:"Counter, then return index of first char with count 1."},
+        {id:"p18",lc:"205",slug:"isomorphic-strings",label:"Isomorphic Strings",pattern:"HashMap",diff:"e",hint:"Two dicts for consistent bidirectional character mapping."},
+        {id:"p19",lc:"409",slug:"longest-palindrome",label:"Longest Palindrome",pattern:"Counting",diff:"e",hint:"Sum pairs of char counts; add 1 if any odd count exists."},
+        {id:"p20",lc:"49",slug:"group-anagrams",label:"Group Anagrams",pattern:"HashMap",diff:"m",hint:"Group by tuple(sorted(word)) or 26-char count tuple."},
       ]},
     ]
   },
-  /* ── PHASE 2 · Core Patterns (40 problems · Aug 14 – Aug 28) ────── */
+  /* ── PHASE 2 · Core Patterns (40 problems) ──────────────────────── */
   {
     id:"ph2",num:"Phase 2",title:"Core Patterns",
     goal:"Two Pointers, Sliding Window, Binary Search, Stack, Linked Lists, Intervals — strictly ordered Easy → Med → Hard.",
-    dateRange:"Aug 14 – Aug 28 (15 days · M–F: 2/day, Sat–Sun: 4/day)",
     weeks:[
-      {label:"Sprint 1 · Aug 14 – Aug 18 (Thu–Mon · 12 probs)",wid:"w1",problems:[
-        {id:"p21",lc:"977",label:"Squares of a Sorted Array",pattern:"Two Pointers",diff:"e",hint:"Two pointers from both ends; compare absolute values, fill result from back."},
-        {id:"p22",lc:"344",label:"Reverse String",pattern:"Two Pointers",diff:"e",hint:"Two pointers swap from both ends inward in-place until meeting."},
-        {id:"p23",lc:"283",label:"Move Zeroes",pattern:"Two Pointers",diff:"e",hint:"Slow pointer tracks non-zero insertion index; fast pointer scans."},
-        {id:"p24",lc:"26",label:"Remove Duplicates from Sorted Array",pattern:"Two Pointers",diff:"e",hint:"Slow pointer tracks unique boundary; fast advances and writes distinct values."},
-        {id:"p25",lc:"88",label:"Merge Sorted Array",pattern:"Two Pointers",diff:"e",hint:"Three pointers merging from the end of nums1 to prevent overwriting."},
-        {id:"p26",lc:"680",label:"Valid Palindrome II",pattern:"Two Pointers",diff:"e",hint:"Two pointers inward; on first mismatch, test if skipping left or right is palindrome."},
-        {id:"p27",lc:"167",label:"Two Sum II - Input Array Is Sorted",pattern:"Two Pointers",diff:"m",hint:"Left and right pointers on sorted array; shrink inward based on sum vs target."},
-        {id:"p28",lc:"15",label:"3Sum",pattern:"Two Pointers",diff:"m",hint:"Sort array, fix one element, run two pointers on remainder. Skip duplicates."},
-        {id:"p29",lc:"11",label:"Container With Most Water",pattern:"Two Pointers",diff:"m",hint:"Pointers at both ends; calculate area, move the shorter wall inward."},
-        {id:"p30",lc:"75",label:"Sort Colors",pattern:"Two Pointers",diff:"m",hint:"Dutch National Flag: three pointers (low, mid, high) sorting 0s, 1s, 2s."},
-        {id:"p31",lc:"42",label:"Trapping Rain Water",pattern:"Two Pointers",diff:"h",hint:"Pointers at ends tracking left_max and right_max; accumulate water at shorter side."},
-        {id:"p32",lc:"643",label:"Maximum Average Subarray I",pattern:"Sliding Window",diff:"e",hint:"Fixed window of length k: subtract outgoing, add incoming element, track max."},
+      {baseLabel:"Sprint 1",wid:"w1",problems:[
+        {id:"p21",lc:"977",slug:"squares-of-a-sorted-array",label:"Squares of a Sorted Array",pattern:"Two Pointers",diff:"e",hint:"Two pointers from both ends; compare absolute values, fill result from back."},
+        {id:"p22",lc:"344",slug:"reverse-string",label:"Reverse String",pattern:"Two Pointers",diff:"e",hint:"Two pointers swap from both ends inward in-place until meeting."},
+        {id:"p23",lc:"283",slug:"move-zeroes",label:"Move Zeroes",pattern:"Two Pointers",diff:"e",hint:"Slow pointer tracks non-zero insertion index; fast pointer scans."},
+        {id:"p24",lc:"26",slug:"remove-duplicates-from-sorted-array",label:"Remove Duplicates from Sorted Array",pattern:"Two Pointers",diff:"e",hint:"Slow pointer tracks unique boundary; fast advances and writes distinct values."},
+        {id:"p25",lc:"88",slug:"merge-sorted-array",label:"Merge Sorted Array",pattern:"Two Pointers",diff:"e",hint:"Three pointers merging from the end of nums1 to prevent overwriting."},
+        {id:"p26",lc:"680",slug:"valid-palindrome-ii",label:"Valid Palindrome II",pattern:"Two Pointers",diff:"e",hint:"Two pointers inward; on first mismatch, test if skipping left or right is palindrome."},
+        {id:"p27",lc:"167",slug:"two-sum-ii-input-array-is-sorted",label:"Two Sum II - Input Array Is Sorted",pattern:"Two Pointers",diff:"m",hint:"Left and right pointers on sorted array; shrink inward based on sum vs target."},
+        {id:"p28",lc:"15",slug:"3sum",label:"3Sum",pattern:"Two Pointers",diff:"m",hint:"Sort array, fix one element, run two pointers on remainder. Skip duplicates."},
+        {id:"p29",lc:"11",slug:"container-with-most-water",label:"Container With Most Water",pattern:"Two Pointers",diff:"m",hint:"Pointers at both ends; calculate area, move the shorter wall inward."},
+        {id:"p30",lc:"75",slug:"sort-colors",label:"Sort Colors",pattern:"Two Pointers",diff:"m",hint:"Dutch National Flag: three pointers (low, mid, high) sorting 0s, 1s, 2s."},
+        {id:"p31",lc:"42",slug:"trapping-rain-water",label:"Trapping Rain Water",pattern:"Two Pointers",diff:"h",hint:"Pointers at ends tracking left_max and right_max; accumulate water at shorter side."},
+        {id:"p32",lc:"643",slug:"maximum-average-subarray-i",label:"Maximum Average Subarray I",pattern:"Sliding Window",diff:"e",hint:"Fixed window of length k: subtract outgoing, add incoming element, track max."},
       ]},
-      {label:"Sprint 2 · Aug 19 – Aug 23 (Tue–Sat · 14 probs)",wid:"w2",problems:[
-        {id:"p33",lc:"219",label:"Contains Duplicate II",pattern:"Sliding Window",diff:"e",hint:"Maintain sliding window HashSet of size k; return True if duplicate found."},
-        {id:"p34",lc:"3",label:"Longest Substring Without Repeating Characters",pattern:"Sliding Window",diff:"m",hint:"Dynamic window expanding right; shrink left on duplicate char using set."},
-        {id:"p35",lc:"424",label:"Longest Repeating Character Replacement",pattern:"Sliding Window",diff:"m",hint:"Window valid while (window_len - max_char_frequency) <= k."},
-        {id:"p36",lc:"567",label:"Permutation in String",pattern:"Sliding Window",diff:"m",hint:"Fixed window of len(s1): slide across s2 and compare character frequency counts."},
-        {id:"p37",lc:"438",label:"Find All Anagrams in a String",pattern:"Sliding Window",diff:"m",hint:"Fixed window char frequency matching; collect all valid window start indices."},
-        {id:"p38",lc:"76",label:"Minimum Window Substring",pattern:"Sliding Window",diff:"h",hint:"Expand right to satisfy char counts; shrink left to minimize window while valid."},
-        {id:"p39",lc:"704",label:"Binary Search",pattern:"Binary Search",diff:"e",hint:"Standard lo/hi binary search checking nums[mid] == target."},
-        {id:"p40",lc:"35",label:"Search Insert Position",pattern:"Binary Search",diff:"e",hint:"Standard binary search; on loop termination return lo as the insertion index."},
-        {id:"p41",lc:"278",label:"First Bad Version",pattern:"Binary Search",diff:"e",hint:"Binary search on boolean predicate; minimize the boundary where isBadVersion is True."},
-        {id:"p42",lc:"74",label:"Search a 2D Matrix",pattern:"Binary Search",diff:"m",hint:"Treat 2D grid as 1D array: row = mid // cols, col = mid % cols."},
-        {id:"p43",lc:"33",label:"Search in Rotated Sorted Array",pattern:"Binary Search",diff:"m",hint:"Identify which half is sorted; check if target lies within that sorted range."},
-        {id:"p44",lc:"875",label:"Koko Eating Bananas",pattern:"Binary Search",diff:"m",hint:"Binary search on answer speed k in range [1, max(piles)] with hours check."},
-        {id:"p45",lc:"20",label:"Valid Parentheses",pattern:"Stack",diff:"e",hint:"Push open brackets to stack; pop and verify match upon encountering closing bracket."},
-        {id:"p46",lc:"232",label:"Implement Queue using Stacks",pattern:"Stack",diff:"e",hint:"Two stacks (in_stack, out_stack) with lazy transfer on pop/peek."},
+      {baseLabel:"Sprint 2",wid:"w2",problems:[
+        {id:"p33",lc:"219",slug:"contains-duplicate-ii",label:"Contains Duplicate II",pattern:"Sliding Window",diff:"e",hint:"Maintain sliding window HashSet of size k; return True if duplicate found."},
+        {id:"p34",lc:"3",slug:"longest-substring-without-repeating-characters",label:"Longest Substring Without Repeating Characters",pattern:"Sliding Window",diff:"m",hint:"Dynamic window expanding right; shrink left on duplicate char using set."},
+        {id:"p35",lc:"424",slug:"longest-repeating-character-replacement",label:"Longest Repeating Character Replacement",pattern:"Sliding Window",diff:"m",hint:"Window valid while (window_len - max_char_frequency) <= k."},
+        {id:"p36",lc:"567",slug:"permutation-in-string",label:"Permutation in String",pattern:"Sliding Window",diff:"m",hint:"Fixed window of len(s1): slide across s2 and compare character frequency counts."},
+        {id:"p37",lc:"438",slug:"find-all-anagrams-in-a-string",label:"Find All Anagrams in a String",pattern:"Sliding Window",diff:"m",hint:"Fixed window char frequency matching; collect all valid window start indices."},
+        {id:"p38",lc:"76",slug:"minimum-window-substring",label:"Minimum Window Substring",pattern:"Sliding Window",diff:"h",hint:"Expand right to satisfy char counts; shrink left to minimize window while valid."},
+        {id:"p39",lc:"704",slug:"binary-search",label:"Binary Search",pattern:"Binary Search",diff:"e",hint:"Standard lo/hi binary search checking nums[mid] == target."},
+        {id:"p40",lc:"35",slug:"search-insert-position",label:"Search Insert Position",pattern:"Binary Search",diff:"e",hint:"Standard binary search; on loop termination return lo as the insertion index."},
+        {id:"p41",lc:"278",slug:"first-bad-version",label:"First Bad Version",pattern:"Binary Search",diff:"e",hint:"Binary search on boolean predicate; minimize the boundary where isBadVersion is True."},
+        {id:"p42",lc:"74",slug:"search-a-2d-matrix",label:"Search a 2D Matrix",pattern:"Binary Search",diff:"m",hint:"Treat 2D grid as 1D array: row = mid // cols, col = mid % cols."},
+        {id:"p43",lc:"33",slug:"search-in-rotated-sorted-array",label:"Search in Rotated Sorted Array",pattern:"Binary Search",diff:"m",hint:"Identify which half is sorted; check if target lies within that sorted range."},
+        {id:"p44",lc:"875",slug:"koko-eating-bananas",label:"Koko Eating Bananas",pattern:"Binary Search",diff:"m",hint:"Binary search on answer speed k in range [1, max(piles)] with hours check."},
+        {id:"p45",lc:"20",slug:"valid-parentheses",label:"Valid Parentheses",pattern:"Stack",diff:"e",hint:"Push open brackets to stack; pop and verify match upon encountering closing bracket."},
+        {id:"p46",lc:"232",slug:"implement-queue-using-stacks",label:"Implement Queue using Stacks",pattern:"Stack",diff:"e",hint:"Two stacks (in_stack, out_stack) with lazy transfer on pop/peek."},
       ]},
-      {label:"Sprint 3 · Aug 24 – Aug 28 (Sun–Thu · 14 probs)",wid:"w3",problems:[
-        {id:"p47",lc:"1047",label:"Remove All Adjacent Duplicates In String",pattern:"Stack",diff:"e",hint:"Maintain stack of chars; pop if current char matches top, otherwise push."},
-        {id:"p48",lc:"155",label:"Min Stack",pattern:"Stack",diff:"m",hint:"Parallel stack tracking minimum value at each depth level for O(1) getMin."},
-        {id:"p49",lc:"150",label:"Evaluate Reverse Polish Notation",pattern:"Stack",diff:"m",hint:"Push integers; pop top two upon operator, apply math, push result."},
-        {id:"p50",lc:"739",label:"Daily Temperatures",pattern:"Mono Stack",diff:"m",hint:"Monotonic decreasing stack of indices; pop when warmer temperature found."},
-        {id:"p51",lc:"84",label:"Largest Rectangle in Histogram",pattern:"Mono Stack",diff:"h",hint:"Monotonic increasing stack; pop heights and calculate maximum rectangle area."},
-        {id:"p52",lc:"206",label:"Reverse Linked List",pattern:"Linked List",diff:"e",hint:"Iterative prev/curr/nxt pointers; reverse link direction one node at a time."},
-        {id:"p53",lc:"21",label:"Merge Two Sorted Lists",pattern:"Linked List",diff:"e",hint:"Dummy head node; iteratively link smaller node from list1 and list2."},
-        {id:"p54",lc:"141",label:"Linked List Cycle",pattern:"Fast/Slow Ptr",diff:"e",hint:"Floyd cycle finding: slow (1 step) and fast (2 steps) collide if cycle exists."},
-        {id:"p55",lc:"876",label:"Middle of the Linked List",pattern:"Fast/Slow Ptr",diff:"e",hint:"Fast moves 2 steps, slow moves 1 step; slow lands on middle when fast ends."},
-        {id:"p56",lc:"234",label:"Palindrome Linked List",pattern:"Linked List",diff:"e",hint:"Find middle with fast/slow, reverse second half, compare both halves."},
-        {id:"p57",lc:"160",label:"Intersection of Two Linked Lists",pattern:"Linked List",diff:"e",hint:"Two pointers redirect to the other list's head on null; meet at intersection."},
-        {id:"p58",lc:"19",label:"Remove Nth Node From End of List",pattern:"Linked List",diff:"m",hint:"Two pointers with n-step gap; when fast reaches end, delete slow.next."},
-        {id:"p59",lc:"143",label:"Reorder List",pattern:"Linked List",diff:"m",hint:"Split list at middle, reverse second half, merge lists alternately."},
-        {id:"p60",lc:"56",label:"Merge Intervals",pattern:"Intervals",diff:"m",hint:"Sort by start time; merge overlapping interval if curr.start <= prev.end."},
+      {baseLabel:"Sprint 3",wid:"w3",problems:[
+        {id:"p47",lc:"1047",slug:"remove-all-adjacent-duplicates-in-string",label:"Remove All Adjacent Duplicates In String",pattern:"Stack",diff:"e",hint:"Maintain stack of chars; pop if current char matches top, otherwise push."},
+        {id:"p48",lc:"155",slug:"min-stack",label:"Min Stack",pattern:"Stack",diff:"m",hint:"Parallel stack tracking minimum value at each depth level for O(1) getMin."},
+        {id:"p49",lc:"150",slug:"evaluate-reverse-polish-notation",label:"Evaluate Reverse Polish Notation",pattern:"Stack",diff:"m",hint:"Push integers; pop top two upon operator, apply math, push result."},
+        {id:"p50",lc:"739",slug:"daily-temperatures",label:"Daily Temperatures",pattern:"Mono Stack",diff:"m",hint:"Monotonic decreasing stack of indices; pop when warmer temperature found."},
+        {id:"p51",lc:"84",slug:"largest-rectangle-in-histogram",label:"Largest Rectangle in Histogram",pattern:"Mono Stack",diff:"h",hint:"Monotonic increasing stack; pop heights and calculate maximum rectangle area."},
+        {id:"p52",lc:"206",slug:"reverse-linked-list",label:"Reverse Linked List",pattern:"Linked List",diff:"e",hint:"Iterative prev/curr/nxt pointers; reverse link direction one node at a time."},
+        {id:"p53",lc:"21",slug:"merge-two-sorted-lists",label:"Merge Two Sorted Lists",pattern:"Linked List",diff:"e",hint:"Dummy head node; iteratively link smaller node from list1 and list2."},
+        {id:"p54",lc:"141",slug:"linked-list-cycle",label:"Linked List Cycle",pattern:"Fast/Slow Ptr",diff:"e",hint:"Floyd cycle finding: slow (1 step) and fast (2 steps) collide if cycle exists."},
+        {id:"p55",lc:"876",slug:"middle-of-the-linked-list",label:"Middle of the Linked List",pattern:"Fast/Slow Ptr",diff:"e",hint:"Fast moves 2 steps, slow moves 1 step; slow lands on middle when fast ends."},
+        {id:"p56",lc:"234",slug:"palindrome-linked-list",label:"Palindrome Linked List",pattern:"Linked List",diff:"e",hint:"Find middle with fast/slow, reverse second half, compare both halves."},
+        {id:"p57",lc:"160",slug:"intersection-of-two-linked-lists",label:"Intersection of Two Linked Lists",pattern:"Linked List",diff:"e",hint:"Two pointers redirect to the other list's head on null; meet at intersection."},
+        {id:"p58",lc:"19",slug:"remove-nth-node-from-end-of-list",label:"Remove Nth Node From End of List",pattern:"Linked List",diff:"m",hint:"Two pointers with n-step gap; when fast reaches end, delete slow.next."},
+        {id:"p59",lc:"143",slug:"reorder-list",label:"Reorder List",pattern:"Linked List",diff:"m",hint:"Split list at middle, reverse second half, merge lists alternately."},
+        {id:"p60",lc:"56",slug:"merge-intervals",label:"Merge Intervals",pattern:"Intervals",diff:"m",hint:"Sort by start time; merge overlapping interval if curr.start <= prev.end."},
       ]},
     ]
   },
-  /* ── PHASE 3 · Trees & Graphs (40 problems · Aug 29 – Sep 12) ───── */
+  /* ── PHASE 3 · Trees & Graphs (40 problems) ─────────────────────── */
   {
     id:"ph3",num:"Phase 3",title:"Trees & Graphs",
     goal:"DFS, BFS, BST, Trie, Heap, Graph traversal — structured Easy → Medium → Hard for confidence.",
-    dateRange:"Aug 29 – Sep 12 (15 days · M–F: 2/day, Sat–Sun: 4/day)",
     weeks:[
-      {label:"Sprint 4 · Aug 29 – Sep 2 (Fri–Tue · 14 probs)",wid:"w4",problems:[
-        {id:"p61",lc:"104",label:"Maximum Depth of Binary Tree",pattern:"Tree DFS",diff:"e",hint:"Recursive DFS: 1 + max(dfs(left), dfs(right)). Base case: null returns 0."},
-        {id:"p62",lc:"226",label:"Invert Binary Tree",pattern:"Tree DFS",diff:"e",hint:"Recursively swap node.left and node.right at every node."},
-        {id:"p63",lc:"543",label:"Diameter of Binary Tree",pattern:"Tree DFS",diff:"e",hint:"At each node compute left_depth + right_depth; track global maximum."},
-        {id:"p64",lc:"572",label:"Subtree of Another Tree",pattern:"Tree DFS",diff:"e",hint:"DFS traverse main tree; call isSameTree helper check at each node."},
-        {id:"p65",lc:"100",label:"Same Tree",pattern:"Tree DFS",diff:"e",hint:"Compare node values and recursively check left == left and right == right."},
-        {id:"p66",lc:"110",label:"Balanced Binary Tree",pattern:"Tree DFS",diff:"e",hint:"Bottom-up DFS returning height; return -1 early if any subtree is unbalanced."},
-        {id:"p67",lc:"257",label:"Binary Tree Paths",pattern:"Tree DFS",diff:"e",hint:"DFS tracking path history; record string upon reaching leaf node."},
-        {id:"p68",lc:"235",label:"Lowest Common Ancestor of BST",pattern:"BST",diff:"m",hint:"If both values < root go left, if both > root go right, else root is LCA."},
-        {id:"p69",lc:"98",label:"Validate Binary Search Tree",pattern:"BST",diff:"m",hint:"DFS passing (min_val, max_val) constraints, or verify strictly sorted inorder."},
-        {id:"p70",lc:"230",label:"Kth Smallest Element in BST",pattern:"BST",diff:"m",hint:"Inorder traversal visits BST in ascending order; return kth visited node."},
-        {id:"p71",lc:"105",label:"Construct Binary Tree from Preorder and Inorder",pattern:"Tree DFS",diff:"m",hint:"First preorder is root; find in inorder to divide subtrees and recurse."},
-        {id:"p72",lc:"124",label:"Binary Tree Maximum Path Sum",pattern:"Tree DFS",diff:"h",hint:"DFS returns max branch contribution; update global with node + left + right."},
-        {id:"p73",lc:"637",label:"Average of Levels in Binary Tree",pattern:"Tree BFS",diff:"e",hint:"Queue BFS; compute average value for all nodes at each depth level."},
-        {id:"p74",lc:"993",label:"Cousins in Binary Tree",pattern:"Tree BFS",diff:"e",hint:"BFS tracking (parent, depth); check same depth and distinct parents."},
+      {baseLabel:"Sprint 4",wid:"w4",problems:[
+        {id:"p61",lc:"104",slug:"maximum-depth-of-binary-tree",label:"Maximum Depth of Binary Tree",pattern:"Tree DFS",diff:"e",hint:"Recursive DFS: 1 + max(dfs(left), dfs(right)). Base case: null returns 0."},
+        {id:"p62",lc:"226",slug:"invert-binary-tree",label:"Invert Binary Tree",pattern:"Tree DFS",diff:"e",hint:"Recursively swap node.left and node.right at every node."},
+        {id:"p63",lc:"543",slug:"diameter-of-binary-tree",label:"Diameter of Binary Tree",pattern:"Tree DFS",diff:"e",hint:"At each node compute left_depth + right_depth; track global maximum."},
+        {id:"p64",lc:"572",slug:"subtree-of-another-tree",label:"Subtree of Another Tree",pattern:"Tree DFS",diff:"e",hint:"DFS traverse main tree; call isSameTree helper check at each node."},
+        {id:"p65",lc:"100",slug:"same-tree",label:"Same Tree",pattern:"Tree DFS",diff:"e",hint:"Compare node values and recursively check left == left and right == right."},
+        {id:"p66",lc:"110",slug:"balanced-binary-tree",label:"Balanced Binary Tree",pattern:"Tree DFS",diff:"e",hint:"Bottom-up DFS returning height; return -1 early if any subtree is unbalanced."},
+        {id:"p67",lc:"257",slug:"binary-tree-paths",label:"Binary Tree Paths",pattern:"Tree DFS",diff:"e",hint:"DFS tracking path history; record string upon reaching leaf node."},
+        {id:"p68",lc:"235",slug:"lowest-common-ancestor-of-a-binary-search-tree",label:"Lowest Common Ancestor of BST",pattern:"BST",diff:"m",hint:"If both values < root go left, if both > root go right, else root is LCA."},
+        {id:"p69",lc:"98",slug:"validate-binary-search-tree",label:"Validate Binary Search Tree",pattern:"BST",diff:"m",hint:"DFS passing (min_val, max_val) constraints, or verify strictly sorted inorder."},
+        {id:"p70",lc:"230",slug:"kth-smallest-element-in-a-bst",label:"Kth Smallest Element in BST",pattern:"BST",diff:"m",hint:"Inorder traversal visits BST in ascending order; return kth visited node."},
+        {id:"p71",lc:"105",slug:"construct-binary-tree-from-preorder-and-inorder-traversal",label:"Construct Binary Tree from Preorder and Inorder",pattern:"Tree DFS",diff:"m",hint:"First preorder is root; find in inorder to divide subtrees and recurse."},
+        {id:"p72",lc:"124",slug:"binary-tree-maximum-path-sum",label:"Binary Tree Maximum Path Sum",pattern:"Tree DFS",diff:"h",hint:"DFS returns max branch contribution; update global with node + left + right."},
+        {id:"p73",lc:"637",slug:"average-of-levels-in-binary-tree",label:"Average of Levels in Binary Tree",pattern:"Tree BFS",diff:"e",hint:"Queue BFS; compute average value for all nodes at each depth level."},
+        {id:"p74",lc:"993",slug:"cousins-in-binary-tree",label:"Cousins in Binary Tree",pattern:"Tree BFS",diff:"e",hint:"BFS tracking (parent, depth); check same depth and distinct parents."},
       ]},
-      {label:"Sprint 5 · Sep 3 – Sep 7 (Wed–Sun · 13 probs)",wid:"w5",problems:[
-        {id:"p75",lc:"102",label:"Binary Tree Level Order Traversal",pattern:"Tree BFS",diff:"m",hint:"Standard queue BFS; snapshot len(queue) to process level by level."},
-        {id:"p76",lc:"199",label:"Binary Tree Right Side View",pattern:"Tree BFS",diff:"m",hint:"BFS level-order traversal taking the last node value at each level."},
-        {id:"p77",lc:"297",label:"Serialize and Deserialize Binary Tree",pattern:"Tree BFS",diff:"h",hint:"Preorder DFS recording null markers ('#'); reconstruct using iterator."},
-        {id:"p78",lc:"700",label:"Search in a BST",pattern:"BST",diff:"e",hint:"Binary search comparison on node.val to traverse left or right child."},
-        {id:"p79",lc:"530",label:"Minimum Absolute Difference in BST",pattern:"BST",diff:"e",hint:"Inorder traversal tracking prev_val; update minimum difference at each step."},
-        {id:"p80",lc:"108",label:"Convert Sorted Array to BST",pattern:"BST",diff:"e",hint:"Pick mid element as root; recursively build left and right subtrees."},
-        {id:"p81",lc:"208",label:"Implement Trie (Prefix Tree)",pattern:"Trie",diff:"m",hint:"TrieNode class with children dict and is_end boolean flag."},
-        {id:"p82",lc:"703",label:"Kth Largest Element in a Stream",pattern:"Heap",diff:"e",hint:"Min-heap of size k; root heap[0] always stores the kth largest element."},
-        {id:"p83",lc:"1046",label:"Last Stone Weight",pattern:"Heap",diff:"e",hint:"Max-heap (negate values in Python heapq); smash two heaviest stones."},
-        {id:"p84",lc:"215",label:"Kth Largest Element in an Array",pattern:"Heap",diff:"m",hint:"Min-heap of size k, or Quickselect for O(n) average runtime."},
-        {id:"p85",lc:"973",label:"K Closest Points to Origin",pattern:"Heap",diff:"m",hint:"Max-heap of size k based on Euclidean distance x^2 + y^2."},
-        {id:"p86",lc:"621",label:"Task Scheduler",pattern:"Heap/Greedy",diff:"m",hint:"Greedy formula: (max_freq - 1) * (n + 1) + count(max_freq_tasks) vs total."},
-        {id:"p87",lc:"295",label:"Find Median from Data Stream",pattern:"Two Heaps",diff:"h",hint:"Max-heap for lower half, min-heap for upper half; balance sizes."},
+      {baseLabel:"Sprint 5",wid:"w5",problems:[
+        {id:"p75",lc:"102",slug:"binary-tree-level-order-traversal",label:"Binary Tree Level Order Traversal",pattern:"Tree BFS",diff:"m",hint:"Standard queue BFS; snapshot len(queue) to process level by level."},
+        {id:"p76",lc:"199",slug:"binary-tree-right-side-view",label:"Binary Tree Right Side View",pattern:"Tree BFS",diff:"m",hint:"BFS level-order traversal taking the last node value at each level."},
+        {id:"p77",lc:"297",slug:"serialize-and-deserialize-binary-tree",label:"Serialize and Deserialize Binary Tree",pattern:"Tree BFS",diff:"h",hint:"Preorder DFS recording null markers ('#'); reconstruct using iterator."},
+        {id:"p78",lc:"700",slug:"search-in-a-binary-search-tree",label:"Search in a BST",pattern:"BST",diff:"e",hint:"Binary search comparison on node.val to traverse left or right child."},
+        {id:"p79",lc:"530",slug:"minimum-absolute-difference-in-bst",label:"Minimum Absolute Difference in BST",pattern:"BST",diff:"e",hint:"Inorder traversal tracking prev_val; update minimum difference at each step."},
+        {id:"p80",lc:"108",slug:"convert-sorted-array-to-binary-search-tree",label:"Convert Sorted Array to BST",pattern:"BST",diff:"e",hint:"Pick mid element as root; recursively build left and right subtrees."},
+        {id:"p81",lc:"208",slug:"implement-trie-prefix-tree",label:"Implement Trie (Prefix Tree)",pattern:"Trie",diff:"m",hint:"TrieNode class with children dict and is_end boolean flag."},
+        {id:"p82",lc:"703",slug:"kth-largest-element-in-a-stream",label:"Kth Largest Element in a Stream",pattern:"Heap",diff:"e",hint:"Min-heap of size k; root heap[0] always stores the kth largest element."},
+        {id:"p83",lc:"1046",slug:"last-stone-weight",label:"Last Stone Weight",pattern:"Heap",diff:"e",hint:"Max-heap (negate values in Python heapq); smash two heaviest stones."},
+        {id:"p84",lc:"215",slug:"kth-largest-element-in-an-array",label:"Kth Largest Element in an Array",pattern:"Heap",diff:"m",hint:"Min-heap of size k, or Quickselect for O(n) average runtime."},
+        {id:"p85",lc:"973",slug:"k-closest-points-to-origin",label:"K Closest Points to Origin",pattern:"Heap",diff:"m",hint:"Max-heap of size k based on Euclidean distance x^2 + y^2."},
+        {id:"p86",lc:"621",slug:"task-scheduler",label:"Task Scheduler",pattern:"Heap/Greedy",diff:"m",hint:"Greedy formula: (max_freq - 1) * (n + 1) + count(max_freq_tasks) vs total."},
+        {id:"p87",lc:"295",slug:"find-median-from-data-stream",label:"Find Median from Data Stream",pattern:"Two Heaps",diff:"h",hint:"Max-heap for lower half, min-heap for upper half; balance sizes."},
       ]},
-      {label:"Sprint 6 · Sep 8 – Sep 12 (Mon–Fri · 13 probs)",wid:"w6",problems:[
-        {id:"p88",lc:"463",label:"Island Perimeter",pattern:"Graph",diff:"e",hint:"For each land cell add 4 - (number of adjacent land neighbors)."},
-        {id:"p89",lc:"733",label:"Flood Fill",pattern:"Graph DFS",diff:"e",hint:"4-directional DFS/BFS from start coordinate replacing matching color."},
-        {id:"p90",lc:"1971",label:"Find if Path Exists in Graph",pattern:"Graph",diff:"e",hint:"BFS/DFS or Union-Find on adjacency list to verify connectivity."},
-        {id:"p91",lc:"200",label:"Number of Islands",pattern:"Graph DFS",diff:"m",hint:"Iterate grid; trigger DFS/BFS on unvisited '1' to sink island component."},
-        {id:"p92",lc:"133",label:"Clone Graph",pattern:"Graph DFS",diff:"m",hint:"DFS with HashMap old_node -> new_node to clone nodes and edges."},
-        {id:"p93",lc:"417",label:"Pacific Atlantic Water Flow",pattern:"Graph DFS",diff:"m",hint:"Multi-source DFS inland from Pacific & Atlantic; take intersection."},
-        {id:"p94",lc:"130",label:"Surrounded Regions",pattern:"Graph DFS",diff:"m",hint:"DFS from border 'O's to mark safe; flip remaining inner 'O's to 'X'."},
-        {id:"p95",lc:"994",label:"Rotting Oranges",pattern:"Graph BFS",diff:"m",hint:"Multi-source BFS from all rotten oranges simultaneously; count minutes."},
-        {id:"p96",lc:"207",label:"Course Schedule",pattern:"Topological",diff:"m",hint:"Cycle detection via 3-color DFS or Kahn's algorithm in-degree BFS."},
-        {id:"p97",lc:"210",label:"Course Schedule II",pattern:"Topological",diff:"m",hint:"Kahn's algorithm: collect nodes with in-degree 0 in topological order."},
-        {id:"p98",lc:"684",label:"Redundant Connection",pattern:"Union-Find",diff:"m",hint:"Union-Find (DSU): the edge that closes an existing cycle is redundant."},
-        {id:"p99",lc:"79",label:"Word Search",pattern:"Backtracking",diff:"m",hint:"4-directional grid DFS matching character sequence; backtrack on mismatch."},
-        {id:"p100",lc:"127",label:"Word Ladder",pattern:"Graph BFS",diff:"h",hint:"Shortest path BFS using intermediate wildcard patterns word[:i] + '*' + word[i+1:]."},
+      {baseLabel:"Sprint 6",wid:"w6",problems:[
+        {id:"p88",lc:"463",slug:"island-perimeter",label:"Island Perimeter",pattern:"Graph",diff:"e",hint:"For each land cell add 4 - (number of adjacent land neighbors)."},
+        {id:"p89",lc:"733",slug:"flood-fill",label:"Flood Fill",pattern:"Graph DFS",diff:"e",hint:"4-directional DFS/BFS from start coordinate replacing matching color."},
+        {id:"p90",lc:"1971",slug:"find-if-path-exists-in-graph",label:"Find if Path Exists in Graph",pattern:"Graph",diff:"e",hint:"BFS/DFS or Union-Find on adjacency list to verify connectivity."},
+        {id:"p91",lc:"200",slug:"number-of-islands",label:"Number of Islands",pattern:"Graph DFS",diff:"m",hint:"Iterate grid; trigger DFS/BFS on unvisited '1' to sink island component."},
+        {id:"p92",lc:"133",slug:"clone-graph",label:"Clone Graph",pattern:"Graph DFS",diff:"m",hint:"DFS with HashMap old_node -> new_node to clone nodes and edges."},
+        {id:"p93",lc:"417",slug:"pacific-atlantic-water-flow",label:"Pacific Atlantic Water Flow",pattern:"Graph DFS",diff:"m",hint:"Multi-source DFS inland from Pacific & Atlantic; take intersection."},
+        {id:"p94",lc:"130",slug:"surrounded-regions",label:"Surrounded Regions",pattern:"Graph DFS",diff:"m",hint:"DFS from border 'O's to mark safe; flip remaining inner 'O's to 'X'."},
+        {id:"p95",lc:"994",slug:"rotting-oranges",label:"Rotting Oranges",pattern:"Graph BFS",diff:"m",hint:"Multi-source BFS from all rotten oranges simultaneously; count minutes."},
+        {id:"p96",lc:"207",slug:"course-schedule",label:"Course Schedule",pattern:"Topological",diff:"m",hint:"Cycle detection via 3-color DFS or Kahn's algorithm in-degree BFS."},
+        {id:"p97",lc:"210",slug:"course-schedule-ii",label:"Course Schedule II",pattern:"Topological",diff:"m",hint:"Kahn's algorithm: collect nodes with in-degree 0 in topological order."},
+        {id:"p98",lc:"684",slug:"redundant-connection",label:"Redundant Connection",pattern:"Union-Find",diff:"m",hint:"Union-Find (DSU): the edge that closes an existing cycle is redundant."},
+        {id:"p99",lc:"79",slug:"word-search",label:"Word Search",pattern:"Backtracking",diff:"m",hint:"4-directional grid DFS matching character sequence; backtrack on mismatch."},
+        {id:"p100",lc:"127",slug:"word-ladder",label:"Word Ladder",pattern:"Graph BFS",diff:"h",hint:"Shortest path BFS using intermediate wildcard patterns word[:i] + '*' + word[i+1:]."},
       ]},
     ]
   },
-  /* ── PHASE 4 · Advanced Patterns (30 problems · Sep 13 – Sep 23) ── */
+  /* ── PHASE 4 · Advanced Patterns (30 problems) ──────────────────── */
   {
     id:"ph4",num:"Phase 4",title:"Advanced Patterns",
     goal:"Backtracking, Greedy, Bit Manipulation, Design — progressive ramp from Easy concepts to Medium/Hard.",
-    dateRange:"Sep 13 – Sep 23 (11 days · M–F: 2/day, Sat–Sun: 4/day)",
     weeks:[
-      {label:"Sprint 7 · Sep 13 – Sep 17 (Sat–Wed · 15 probs)",wid:"w7",problems:[
-        {id:"p101",lc:"78",label:"Subsets",pattern:"Backtracking",diff:"m",hint:"Cascading / backtracking: include/exclude element; record path at each step."},
-        {id:"p102",lc:"90",label:"Subsets II",pattern:"Backtracking",diff:"m",hint:"Sort array; skip identical duplicate elements at same recursion depth."},
-        {id:"p103",lc:"39",label:"Combination Sum",pattern:"Backtracking",diff:"m",hint:"Backtrack with element reuse: pass same index until target is met or exceeded."},
-        {id:"p104",lc:"40",label:"Combination Sum II",pattern:"Backtracking",diff:"m",hint:"Sort array; advance index without element reuse; skip adjacent duplicates."},
-        {id:"p105",lc:"46",label:"Permutations",pattern:"Backtracking",diff:"m",hint:"Backtrack tracking used set or swap elements in-place; record when len == n."},
-        {id:"p106",lc:"131",label:"Palindrome Partitioning",pattern:"Backtracking",diff:"m",hint:"Partition prefix if it is palindrome; recurse on remaining suffix string."},
-        {id:"p107",lc:"17",label:"Letter Combinations of a Phone Number",pattern:"Backtracking",diff:"m",hint:"Map digits to char lists; DFS build Cartesian product string combinations."},
-        {id:"p108",lc:"51",label:"N-Queens",pattern:"Backtracking",diff:"h",hint:"Place queens row-by-row tracking cols, pos_diagonals, and neg_diagonals."},
-        {id:"p109",lc:"605",label:"Can Place Flowers",pattern:"Greedy",diff:"e",hint:"Greedy scan: plant flower if left, current, and right plots are all 0."},
-        {id:"p110",lc:"392",label:"Is Subsequence",pattern:"Greedy",diff:"e",hint:"Two pointers: advance sub-pointer only when matching char in main string."},
-        {id:"p111",lc:"55",label:"Jump Game",pattern:"Greedy",diff:"m",hint:"Track max_reachable index; return False if current index exceeds reachable."},
-        {id:"p112",lc:"45",label:"Jump Game II",pattern:"Greedy",diff:"m",hint:"BFS greedy: track current jump boundary and farthest_reach; increment jump."},
-        {id:"p113",lc:"134",label:"Gas Station",pattern:"Greedy",diff:"m",hint:"Total gas >= cost means solution exists; reset start if running gas < 0."},
-        {id:"p114",lc:"763",label:"Partition Labels",pattern:"Greedy",diff:"m",hint:"Record last index of each char; extend partition boundary until max last index."},
-        {id:"p115",lc:"846",label:"Hand of Straights",pattern:"Greedy",diff:"m",hint:"Sort + Counter; greedily form groups of size k starting from smallest card."},
+      {baseLabel:"Sprint 7",wid:"w7",problems:[
+        {id:"p101",lc:"78",slug:"subsets",label:"Subsets",pattern:"Backtracking",diff:"m",hint:"Cascading / backtracking: include/exclude element; record path at each step."},
+        {id:"p102",lc:"90",slug:"subsets-ii",label:"Subsets II",pattern:"Backtracking",diff:"m",hint:"Sort array; skip identical duplicate elements at same recursion depth."},
+        {id:"p103",lc:"39",slug:"combination-sum",label:"Combination Sum",pattern:"Backtracking",diff:"m",hint:"Backtrack with element reuse: pass same index until target is met or exceeded."},
+        {id:"p104",lc:"40",slug:"combination-sum-ii",label:"Combination Sum II",pattern:"Backtracking",diff:"m",hint:"Sort array; advance index without element reuse; skip adjacent duplicates."},
+        {id:"p105",lc:"46",slug:"permutations",label:"Permutations",pattern:"Backtracking",diff:"m",hint:"Backtrack tracking used set or swap elements in-place; record when len == n."},
+        {id:"p106",lc:"131",slug:"palindrome-partitioning",label:"Palindrome Partitioning",pattern:"Backtracking",diff:"m",hint:"Partition prefix if it is palindrome; recurse on remaining suffix string."},
+        {id:"p107",lc:"17",slug:"letter-combinations-of-a-phone-number",label:"Letter Combinations of a Phone Number",pattern:"Backtracking",diff:"m",hint:"Map digits to char lists; DFS build Cartesian product string combinations."},
+        {id:"p108",lc:"51",slug:"n-queens",label:"N-Queens",pattern:"Backtracking",diff:"h",hint:"Place queens row-by-row tracking cols, pos_diagonals, and neg_diagonals."},
+        {id:"p109",lc:"605",slug:"can-place-flowers",label:"Can Place Flowers",pattern:"Greedy",diff:"e",hint:"Greedy scan: plant flower if left, current, and right plots are all 0."},
+        {id:"p110",lc:"392",slug:"is-subsequence",label:"Is Subsequence",pattern:"Greedy",diff:"e",hint:"Two pointers: advance sub-pointer only when matching char in main string."},
+        {id:"p111",lc:"55",slug:"jump-game",label:"Jump Game",pattern:"Greedy",diff:"m",hint:"Track max_reachable index; return False if current index exceeds reachable."},
+        {id:"p112",lc:"45",slug:"jump-game-ii",label:"Jump Game II",pattern:"Greedy",diff:"m",hint:"BFS greedy: track current jump boundary and farthest_reach; increment jump."},
+        {id:"p113",lc:"134",slug:"gas-station",label:"Gas Station",pattern:"Greedy",diff:"m",hint:"Total gas >= cost means solution exists; reset start if running gas < 0."},
+        {id:"p114",lc:"763",slug:"partition-labels",label:"Partition Labels",pattern:"Greedy",diff:"m",hint:"Record last index of each char; extend partition boundary until max last index."},
+        {id:"p115",lc:"846",slug:"hand-of-straights",label:"Hand of Straights",pattern:"Greedy",diff:"m",hint:"Sort + Counter; greedily form groups of size k starting from smallest card."},
       ]},
-      {label:"Sprint 8 · Sep 18 – Sep 23 (Thu–Tue · 15 probs)",wid:"w8",problems:[
-        {id:"p116",lc:"136",label:"Single Number",pattern:"Bit Manipulation",diff:"e",hint:"XOR all elements together; duplicate pairs cancel out leaving single number."},
-        {id:"p117",lc:"191",label:"Number of 1 Bits",pattern:"Bit Manipulation",diff:"e",hint:"Bit trick: n &= (n - 1) clears lowest set bit; count steps until n = 0."},
-        {id:"p118",lc:"268",label:"Missing Number",pattern:"Bit/Math",diff:"e",hint:"XOR all 0..n with array elements, or use n*(n+1)/2 - sum(nums)."},
-        {id:"p119",lc:"338",label:"Counting Bits",pattern:"Bit/DP",diff:"e",hint:"DP recurrence: dp[i] = dp[i >> 1] + (i & 1) for O(n) runtime."},
-        {id:"p120",lc:"231",label:"Power of Two",pattern:"Bit Manipulation",diff:"e",hint:"Return n > 0 and (n & (n - 1)) == 0 (only a single bit is set)."},
-        {id:"p121",lc:"371",label:"Sum of Two Integers",pattern:"Bit Manipulation",diff:"m",hint:"Bitwise math: XOR for sum without carry, AND << 1 for carry; repeat."},
-        {id:"p122",lc:"252",label:"Meeting Rooms",pattern:"Intervals",diff:"e",hint:"Sort by start time; check if any meeting overlaps with previous end time."},
-        {id:"p123",lc:"228",label:"Summary Ranges",pattern:"Intervals",diff:"e",hint:"Scan array tracking streak start; format range strings on streak break."},
-        {id:"p124",lc:"981",label:"Time Based Key-Value Store",pattern:"Design",diff:"m",hint:"Dict of lists with (timestamp, value); bisect_right for fast binary search."},
-        {id:"p125",lc:"380",label:"Insert Delete GetRandom O(1)",pattern:"Design",diff:"m",hint:"Array + HashMap: swap element with array tail for O(1) delete; random.choice."},
-        {id:"p126",lc:"287",label:"Find the Duplicate Number",pattern:"Floyd's",diff:"m",hint:"Floyd cycle detection treating array index-to-value as next pointers."},
-        {id:"p127",lc:"253",label:"Meeting Rooms II",pattern:"Heap",diff:"m",hint:"Min-heap of end times; pop if next meeting starts after earliest end time."},
-        {id:"p128",lc:"347",label:"Top K Frequent Elements",pattern:"Heap/Bucket",diff:"m",hint:"Counter + Bucket Sort for O(n) runtime, or heapq.nlargest for O(n log k)."},
-        {id:"p129",lc:"128",label:"Longest Consecutive Sequence",pattern:"HashMap",diff:"m",hint:"HashSet; only start streak counting when num - 1 is not in the set."},
-        {id:"p130",lc:"73",label:"Set Matrix Zeroes",pattern:"Matrix",diff:"m",hint:"Use first row and col as markers; update cells in reverse pass."},
+      {baseLabel:"Sprint 8",wid:"w8",problems:[
+        {id:"p116",lc:"136",slug:"single-number",label:"Single Number",pattern:"Bit Manipulation",diff:"e",hint:"XOR all elements together; duplicate pairs cancel out leaving single number."},
+        {id:"p117",lc:"191",slug:"number-of-1-bits",label:"Number of 1 Bits",pattern:"Bit Manipulation",diff:"e",hint:"Bit trick: n &= (n - 1) clears lowest set bit; count steps until n = 0."},
+        {id:"p118",lc:"268",slug:"missing-number",label:"Missing Number",pattern:"Bit/Math",diff:"e",hint:"XOR all 0..n with array elements, or use n*(n+1)/2 - sum(nums)."},
+        {id:"p119",lc:"338",slug:"counting-bits",label:"Counting Bits",pattern:"Bit/DP",diff:"e",hint:"DP recurrence: dp[i] = dp[i >> 1] + (i & 1) for O(n) runtime."},
+        {id:"p120",lc:"231",slug:"power-of-two",label:"Power of Two",pattern:"Bit Manipulation",diff:"e",hint:"Return n > 0 and (n & (n - 1)) == 0 (only a single bit is set)."},
+        {id:"p121",lc:"371",slug:"sum-of-two-integers",label:"Sum of Two Integers",pattern:"Bit Manipulation",diff:"m",hint:"Bitwise math: XOR for sum without carry, AND << 1 for carry; repeat."},
+        {id:"p122",lc:"252",slug:"meeting-rooms",label:"Meeting Rooms",pattern:"Intervals",diff:"e",hint:"Sort by start time; check if any meeting overlaps with previous end time."},
+        {id:"p123",lc:"228",slug:"summary-ranges",label:"Summary Ranges",pattern:"Intervals",diff:"e",hint:"Scan array tracking streak start; format range strings on streak break."},
+        {id:"p124",lc:"981",slug:"time-based-key-value-store",label:"Time Based Key-Value Store",pattern:"Design",diff:"m",hint:"Dict of lists with (timestamp, value); bisect_right for fast binary search."},
+        {id:"p125",lc:"380",slug:"insert-delete-getrandom-o1",label:"Insert Delete GetRandom O(1)",pattern:"Design",diff:"m",hint:"Array + HashMap: swap element with array tail for O(1) delete; random.choice."},
+        {id:"p126",lc:"287",slug:"find-the-duplicate-number",label:"Find the Duplicate Number",pattern:"Floyd's",diff:"m",hint:"Floyd cycle detection treating array index-to-value as next pointers."},
+        {id:"p127",lc:"253",slug:"meeting-rooms-ii",label:"Meeting Rooms II",pattern:"Heap",diff:"m",hint:"Min-heap of end times; pop if next meeting starts after earliest end time."},
+        {id:"p128",lc:"347",slug:"top-k-frequent-elements",label:"Top K Frequent Elements",pattern:"Heap/Bucket",diff:"m",hint:"Counter + Bucket Sort for O(n) runtime, or heapq.nlargest for O(n log k)."},
+        {id:"p129",lc:"128",slug:"longest-consecutive-sequence",label:"Longest Consecutive Sequence",pattern:"HashMap",diff:"m",hint:"HashSet; only start streak counting when num - 1 is not in the set."},
+        {id:"p130",lc:"73",slug:"set-matrix-zeroes",label:"Set Matrix Zeroes",pattern:"Matrix",diff:"m",hint:"Use first row and col as markers; update cells in reverse pass."},
       ]},
     ]
   },
-  /* ── PHASE 5 · Dynamic Programming (20 problems · Sep 24 – Sep 30) ─ */
+  /* ── PHASE 5 · Dynamic Programming (20 problems) ────────────────── */
   {
     id:"ph5",num:"Phase 5",title:"Dynamic Programming",
     goal:"The final boss. Easy foundation warm-ups → 1-D DP → 2-D DP / Knapsack mastery.",
-    dateRange:"Sep 24 – Sep 30 (7 days · M–F: 2/day, Sat–Sun: 4/day)",
     weeks:[
-      {label:"Sprint 9 · Sep 24 – Sep 27 (Wed–Sat · 10 probs)",wid:"w9",problems:[
-        {id:"p131",lc:"509",label:"Fibonacci Number",pattern:"1-D DP",diff:"e",hint:"dp[i] = dp[i-1] + dp[i-2], or two scalar variables in O(1) space."},
-        {id:"p132",lc:"70",label:"Climbing Stairs",pattern:"1-D DP",diff:"e",hint:"Identical to Fibonacci: ways[i] = ways[i-1] + ways[i-2]."},
-        {id:"p133",lc:"746",label:"Min Cost Climbing Stairs",pattern:"1-D DP",diff:"e",hint:"dp[i] = cost[i] + min(dp[i-1], dp[i-2])."},
-        {id:"p134",lc:"118",label:"Pascal's Triangle",pattern:"1-D DP",diff:"e",hint:"Construct each row: row[j] = prev_row[j-1] + prev_row[j]."},
-        {id:"p135",lc:"198",label:"House Robber",pattern:"1-D DP",diff:"m",hint:"dp[i] = max(dp[i-1], dp[i-2] + nums[i]) optimized to two variables."},
-        {id:"p136",lc:"213",label:"House Robber II",pattern:"1-D DP",diff:"m",hint:"Circular array: max(rob(nums[1:]), rob(nums[:-1]))."},
-        {id:"p137",lc:"139",label:"Word Break",pattern:"1-D DP",diff:"m",hint:"dp[i] = any(dp[j] and s[j:i] in wordSet for j in range(i))."},
-        {id:"p138",lc:"322",label:"Coin Change",pattern:"1-D DP",diff:"m",hint:"dp[amt] = 1 + min(dp[amt - c] for c in coins) initialized to infinity."},
-        {id:"p139",lc:"300",label:"Longest Increasing Subsequence",pattern:"1-D DP",diff:"m",hint:"O(n^2) DP or O(n log n) patience sorting with bisect_left."},
-        {id:"p140",lc:"91",label:"Decode Ways",pattern:"1-D DP",diff:"m",hint:"DP summing single-digit (1-9) and two-digit (10-26) valid transitions."},
+      {baseLabel:"Sprint 9",wid:"w9",problems:[
+        {id:"p131",lc:"509",slug:"fibonacci-number",label:"Fibonacci Number",pattern:"1-D DP",diff:"e",hint:"dp[i] = dp[i-1] + dp[i-2], or two scalar variables in O(1) space."},
+        {id:"p132",lc:"70",slug:"climbing-stairs",label:"Climbing Stairs",pattern:"1-D DP",diff:"e",hint:"Identical to Fibonacci: ways[i] = ways[i-1] + ways[i-2]."},
+        {id:"p133",lc:"746",slug:"min-cost-climbing-stairs",label:"Min Cost Climbing Stairs",pattern:"1-D DP",diff:"e",hint:"dp[i] = cost[i] + min(dp[i-1], dp[i-2])."},
+        {id:"p134",lc:"118",slug:"pascals-triangle",label:"Pascal's Triangle",pattern:"1-D DP",diff:"e",hint:"Construct each row: row[j] = prev_row[j-1] + prev_row[j]."},
+        {id:"p135",lc:"198",slug:"house-robber",label:"House Robber",pattern:"1-D DP",diff:"m",hint:"dp[i] = max(dp[i-1], dp[i-2] + nums[i]) optimized to two variables."},
+        {id:"p136",lc:"213",slug:"house-robber-ii",label:"House Robber II",pattern:"1-D DP",diff:"m",hint:"Circular array: max(rob(nums[1:]), rob(nums[:-1]))."},
+        {id:"p137",lc:"139",slug:"word-break",label:"Word Break",pattern:"1-D DP",diff:"m",hint:"dp[i] = any(dp[j] and s[j:i] in wordSet for j in range(i))."},
+        {id:"p138",lc:"322",slug:"coin-change",label:"Coin Change",pattern:"1-D DP",diff:"m",hint:"dp[amt] = 1 + min(dp[amt - c] for c in coins) initialized to infinity."},
+        {id:"p139",lc:"300",slug:"longest-increasing-subsequence",label:"Longest Increasing Subsequence",pattern:"1-D DP",diff:"m",hint:"O(n^2) DP or O(n log n) patience sorting with bisect_left."},
+        {id:"p140",lc:"91",slug:"decode-ways",label:"Decode Ways",pattern:"1-D DP",diff:"m",hint:"DP summing single-digit (1-9) and two-digit (10-26) valid transitions."},
       ]},
-      {label:"Sprint 10 · Sep 28 – Sep 30 (Sun–Tue · 10 probs)",wid:"w10",problems:[
-        {id:"p141",lc:"62",label:"Unique Paths",pattern:"2-D DP",diff:"m",hint:"dp[i][j] = dp[i-1][j] + dp[i][j-1] optimized to 1D row buffer."},
-        {id:"p142",lc:"5",label:"Longest Palindromic Substring",pattern:"2-D DP",diff:"m",hint:"Expand around odd and even centers for O(n^2), or Manacher algorithm."},
-        {id:"p143",lc:"647",label:"Palindromic Substrings",pattern:"2-D DP",diff:"m",hint:"Expand around all 2n-1 centers, accumulating total palindromes found."},
-        {id:"p144",lc:"1143",label:"Longest Common Subsequence",pattern:"2-D DP",diff:"m",hint:"If chars match 1 + dp[i-1][j-1], else max(dp[i-1][j], dp[i][j-1])."},
-        {id:"p145",lc:"416",label:"Partition Equal Subset Sum",pattern:"DP/Knapsack",diff:"m",hint:"0/1 Knapsack: determine if subset sum equals total_sum // 2 using DP set."},
-        {id:"p146",lc:"494",label:"Target Sum",pattern:"DP/Knapsack",diff:"m",hint:"Transform to subset sum: find subsets summing to (total + target) // 2."},
-        {id:"p147",lc:"518",label:"Coin Change II",pattern:"DP/Knapsack",diff:"m",hint:"Unbounded Knapsack: iterate coins outer loop, dp[a] += dp[a - coin]."},
-        {id:"p148",lc:"72",label:"Edit Distance",pattern:"2-D DP",diff:"m",hint:"DP grid matching characters: 1 + min(insert, delete, replace)."},
-        {id:"p149",lc:"152",label:"Maximum Product Subarray",pattern:"1-D DP",diff:"m",hint:"Maintain cur_max and cur_min at each index; update global maximum."},
-        {id:"p150",lc:"10",label:"Regular Expression Matching",pattern:"2-D DP",diff:"h",hint:"2D DP handling '.' (any char) and '*' (zero or more of preceding char)."},
+      {baseLabel:"Sprint 10",wid:"w10",problems:[
+        {id:"p141",lc:"62",slug:"unique-paths",label:"Unique Paths",pattern:"2-D DP",diff:"m",hint:"dp[i][j] = dp[i-1][j] + dp[i][j-1] optimized to 1D row buffer."},
+        {id:"p142",lc:"5",slug:"longest-palindromic-substring",label:"Longest Palindromic Substring",pattern:"2-D DP",diff:"m",hint:"Expand around odd and even centers for O(n^2), or Manacher algorithm."},
+        {id:"p143",lc:"647",slug:"palindromic-substrings",label:"Palindromic Substrings",pattern:"2-D DP",diff:"m",hint:"Expand around all 2n-1 centers, accumulating total palindromes found."},
+        {id:"p144",lc:"1143",slug:"longest-common-subsequence",label:"Longest Common Subsequence",pattern:"2-D DP",diff:"m",hint:"If chars match 1 + dp[i-1][j-1], else max(dp[i-1][j], dp[i][j-1])."},
+        {id:"p145",lc:"416",slug:"partition-equal-subset-sum",label:"Partition Equal Subset Sum",pattern:"DP/Knapsack",diff:"m",hint:"0/1 Knapsack: determine if subset sum equals total_sum // 2 using DP set."},
+        {id:"p146",lc:"494",slug:"target-sum",label:"Target Sum",pattern:"DP/Knapsack",diff:"m",hint:"Transform to subset sum: find subsets summing to (total + target) // 2."},
+        {id:"p147",lc:"518",slug:"coin-change-ii",label:"Coin Change II",pattern:"DP/Knapsack",diff:"m",hint:"Unbounded Knapsack: iterate coins outer loop, dp[a] += dp[a - coin]."},
+        {id:"p148",lc:"72",slug:"edit-distance",label:"Edit Distance",pattern:"2-D DP",diff:"m",hint:"DP grid matching characters: 1 + min(insert, delete, replace)."},
+        {id:"p149",lc:"152",slug:"maximum-product-subarray",label:"Maximum Product Subarray",pattern:"1-D DP",diff:"m",hint:"Maintain cur_max and cur_min at each index; update global maximum."},
+        {id:"p150",lc:"10",slug:"regular-expression-matching",label:"Regular Expression Matching",pattern:"2-D DP",diff:"h",hint:"2D DP handling '.' (any char) and '*' (zero or more of preceding char)."},
       ]},
     ]
   }
 ];
-const SK="loki_lc150_py_v1";
-let S=(()=>{try{return JSON.parse(localStorage.getItem(SK))||{};}catch{return{}}})();
+
+/* ── Storage & User Configuration ───────────────────────────────── */
+const SK="lc150_progress_v2";
+const CK_CFG="lc150_config_v2";
+
+function todayISO(){
+  const d=new Date();
+  const y=d.getFullYear();
+  const m=String(d.getMonth()+1).padStart(2,"0");
+  const day=String(d.getDate()).padStart(2,"0");
+  return `${y}-${m}-${day}`;
+}
+
+const DEFAULT_CFG={
+  name:"Loki",
+  lang:"Python 3",
+  quote:"Consistency beats intensity — master the patterns, one problem at a time.",
+  startDate:todayISO(),
+  weekdayPace:2,
+  weekendPace:4
+};
+
+let S=(()=>{try{return JSON.parse(localStorage.getItem(SK))||JSON.parse(localStorage.getItem("loki_lc150_py_v1"))||{};}catch{return{}}})();
 const save=()=>localStorage.setItem(SK,JSON.stringify(S));
+
+let CFG=(()=>{
+  try{
+    const raw=localStorage.getItem(CK_CFG);
+    return raw?{...DEFAULT_CFG,...JSON.parse(raw)}:null;
+  }catch{return null;}
+})();
+
+function activeCfg(){return CFG||DEFAULT_CFG;}
+
+/* ── Dynamic Schedule & Date Calculation ────────────────────────── */
+const MONTHS=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const DAYS=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+
+function fmtDate(d){return `${MONTHS[d.getMonth()]} ${d.getDate()}`;}
+function fmtDay(d){return DAYS[d.getDay()];}
+function addDays(d,n){const r=new Date(d.getTime());r.setDate(r.getDate()+n);return r;}
+function diffDaysInclusive(a,b){return Math.max(1,Math.round((b-a)/(1000*60*60*24))+1);}
+
+function computeSchedule(){
+  const cfg=activeCfg();
+  const parts=(cfg.startDate||todayISO()).split("-").map(Number);
+  let curDate=new Date(parts[0],(parts[1]||1)-1,parts[2]||1);
+  const wkday=Math.max(1,Number(cfg.weekdayPace)||2);
+  const wkend=Math.max(1,Number(cfg.weekendPace)||4);
+  const capFor=d=>(d.getDay()===0||d.getDay()===6)?wkend:wkday;
+
+  let remCap=capFor(curDate);
+  const overallStart=new Date(curDate.getTime());
+
+  PHASES.forEach(ph=>{
+    let phStart=null;
+    let phEnd=null;
+    ph.weeks.forEach(w=>{
+      let wStart=null;
+      let wEnd=null;
+      w.problems.forEach(()=>{
+        if(remCap<=0){
+          curDate=addDays(curDate,1);
+          remCap=capFor(curDate);
+        }
+        if(!wStart)wStart=new Date(curDate.getTime());
+        if(!phStart)phStart=new Date(curDate.getTime());
+        wEnd=new Date(curDate.getTime());
+        phEnd=new Date(curDate.getTime());
+        remCap--;
+      });
+      w.label=`${w.baseLabel} · ${fmtDate(wStart)} – ${fmtDate(wEnd)} (${fmtDay(wStart)}–${fmtDay(wEnd)} · ${w.problems.length} probs)`;
+    });
+    const pDays=diffDaysInclusive(phStart,phEnd);
+    ph.dateRange=`${fmtDate(phStart)} – ${fmtDate(phEnd)} (${pDays} days · M–F: ${wkday}/day, Sat–Sun: ${wkend}/day)`;
+  });
+
+  const overallEnd=new Date(curDate.getTime());
+  const totalDays=diffDaysInclusive(overallStart,overallEnd);
+  const weeklyTotal=wkday*5+wkend*2;
+
+  /* Update Header, Sidebar & Meta UI */
+  const shortLang=cfg.lang.trim().split(/\s+/)[0]||"Code";
+  document.title=`${cfg.name} · LeetCode 150 (${cfg.lang})`;
+  document.getElementById("sbName").textContent=`${cfg.name} · LC 150`;
+  document.getElementById("sbGoal").textContent=`${fmtDate(overallStart)} – ${fmtDate(overallEnd)} · ${shortLang}`;
+  document.getElementById("topbarTitle").textContent=`LeetCode 150 · ${cfg.lang} Roadmap`;
+  document.getElementById("heroQuote").textContent=`"${cfg.quote}"`;
+  document.getElementById("heroEyebrow").textContent=`Progress Tracker · ${overallStart.getFullYear()}`;
+  document.getElementById("heroLang").textContent=shortLang;
+  document.getElementById("heroSub").textContent=`Mon–Fri: ${wkday}/day · Sat–Sun: ${wkend}/day (${weeklyTotal}/week) · ${fmtDate(overallStart)} → ${fmtDate(overallEnd)}`;
+  document.getElementById("metaUser").textContent=cfg.name;
+  document.getElementById("metaLang").textContent=cfg.lang;
+  document.getElementById("metaDuration").textContent=`${fmtDate(overallStart)} – ${fmtDate(overallEnd)} (${totalDays}d)`;
+  document.getElementById("metaWeekday").textContent=`${wkday} / day (M–F)`;
+  document.getElementById("metaWeekend").textContent=`${wkend} / day (Sat–Sun)`;
+  document.getElementById("metaWeekly").textContent=`${weeklyTotal} / week`;
+}
+
 function allProblems(){const l=[];PHASES.forEach(ph=>ph.weeks.forEach(w=>w.problems.forEach(p=>l.push(p))));return l;}
-function lcSlug(n){return n.toLowerCase().replace(/[^a-z0-9 ]/g,"").replace(/\s+/g,"-").replace(/-+/g,"-").replace(/^-|-$/g,"");}
 function phaseProg(ph){const ids=[];ph.weeks.forEach(w=>w.problems.forEach(p=>ids.push(p.id)));const done=ids.filter(id=>S[id]).length;return{done,total:ids.length,pct:ids.length?Math.round(done/ids.length*100):0};}
 function overallProg(){const all=allProblems();const done=all.filter(p=>S[p.id]).length;return{done,total:all.length,pct:all.length?Math.round(done/all.length*100):0};}
+
 function renderPhases(){
   const root=document.getElementById("phasesRoot");root.innerHTML="";
   PHASES.forEach((ph,pi)=>{
@@ -428,12 +586,13 @@ function renderPhases(){
     let h=`<div class="phase-header"><div><div class="phase-eyebrow">${ph.num}</div><div class="phase-title">${ph.title}</div><div class="phase-goal">${ph.goal}</div><div class="phase-dates">${ph.dateRange} &middot; ${total} problems</div></div><div class="phase-right"><div class="phase-pct-num" id="pct-${ph.id}">${done}/${total}</div><div class="phase-bar"><div class="phase-fill" id="fill-${ph.id}" style="width:${pct}%;background:${color}"></div></div></div></div>`;
     ph.weeks.forEach(week=>{
       const wDone=week.problems.filter(p=>S[p.id]).length;
-      h+=`<div class="week-section"><div class="week-label">${week.label} <span class="week-count" id="wc-${week.wid}">${wDone}/${week.problems.length}</span></div><table class="prob-table"><thead><tr><th style="width:28px"></th><th style="width:50px">LC#</th><th>Problem</th><th>Pattern</th><th style="text-align:right">Link</th></tr></thead><tbody>${week.problems.map(prob=>{const done=!!S[prob.id];return`<tr class="prob-row${done?" done":""}" id="row-${prob.id}" onclick="toggleProb('${prob.id}','${ph.id}','${week.wid}')"><td class="prob-check-cell"><div class="prob-check">${done?CK13:""}</div></td><td class="prob-num-cell">${prob.lc}</td><td class="prob-name">${prob.label}<span class="diff-dot diff-${prob.diff}"></span>${prob.hint?'<div class="prob-hint">'+prob.hint+'</div>':''}</td><td class="prob-pattern">${prob.pattern}</td><td class="prob-lc-cell"><a class="lc-link" href="https://leetcode.com/problems/${lcSlug(prob.label)}/" target="_blank" onclick="event.stopPropagation()">#${prob.lc}</a></td></tr>`;}).join("")}</tbody></table></div>`;
+      h+=`<div class="week-section"><div class="week-label">${week.label} <span class="week-count" id="wc-${week.wid}">${wDone}/${week.problems.length}</span></div><table class="prob-table"><thead><tr><th style="width:28px"></th><th style="width:50px">LC#</th><th>Problem</th><th>Pattern</th><th style="text-align:right">Link</th></tr></thead><tbody>${week.problems.map(prob=>{const done=!!S[prob.id];return`<tr class="prob-row${done?" done":""}" id="row-${prob.id}" onclick="toggleProb('${prob.id}','${ph.id}','${week.wid}')"><td class="prob-check-cell"><div class="prob-check">${done?CK13:""}</div></td><td class="prob-num-cell">${prob.lc}</td><td class="prob-name">${prob.label}<span class="diff-dot diff-${prob.diff}"></span>${prob.hint?'<div class="prob-hint">'+prob.hint+'</div>':''}</td><td class="prob-pattern">${prob.pattern}</td><td class="prob-lc-cell"><a class="lc-link" href="https://leetcode.com/problems/${prob.slug}/" target="_blank" rel="noopener" onclick="event.stopPropagation()">#${prob.lc}</a></td></tr>`;}).join("")}</tbody></table></div>`;
     });
     if(pi<PHASES.length-1)h+=`<hr class="phase-divider">`;
     el.innerHTML=h;root.appendChild(el);
   });
 }
+
 function renderSidebar(){
   const nav=document.getElementById("sbNav");nav.innerHTML="";
   PHASES.forEach((ph,pi)=>{
@@ -444,6 +603,7 @@ function renderSidebar(){
     nav.appendChild(a);
   });
 }
+
 function renderGlobalStats(){
   const all=allProblems();const done=all.filter(p=>S[p.id]).length;
   const easy=all.filter(p=>p.diff==="e");const med=all.filter(p=>p.diff==="m");const hard=all.filter(p=>p.diff==="h");
@@ -460,7 +620,14 @@ function renderGlobalStats(){
   document.getElementById("overallPct").textContent=`${d} / ${tt}`;
   document.getElementById("topCount").textContent=`${d} / ${tt} solved`;
 }
-function renderAll(){renderPhases();renderSidebar();renderGlobalStats();}
+
+function renderAll(){
+  computeSchedule();
+  renderPhases();
+  renderSidebar();
+  renderGlobalStats();
+}
+
 function toggleProb(id,phId,wid){
   S[id]=!S[id];save();const done=S[id];
   const row=document.getElementById(`row-${id}`);
@@ -471,13 +638,50 @@ function toggleProb(id,phId,wid){
   if(ph){const{done:pd,total:pt,pct}=phaseProg(ph);const pe=document.getElementById(`pct-${phId}`);const fe=document.getElementById(`fill-${phId}`);if(pe)pe.textContent=`${pd}/${pt}`;if(fe)fe.style.width=pct+"%";}
   renderSidebar();renderGlobalStats();
 }
+
+/* ── Setup Modal Handlers ───────────────────────────────────────── */
+function openSetup(){
+  const c=activeCfg();
+  document.getElementById("inpName").value=c.name;
+  document.getElementById("inpLang").value=c.lang;
+  document.getElementById("inpQuote").value=c.quote;
+  document.getElementById("inpStart").value=c.startDate||todayISO();
+  document.getElementById("inpWeekday").value=c.weekdayPace;
+  document.getElementById("inpWeekend").value=c.weekendPace;
+  document.getElementById("setupModal").classList.add("open");
+}
+
+function closeSetup(){
+  if(!CFG){
+    CFG={...DEFAULT_CFG};
+    localStorage.setItem(CK_CFG,JSON.stringify(CFG));
+  }
+  document.getElementById("setupModal").classList.remove("open");
+}
+
+function saveSetup(e){
+  e.preventDefault();
+  CFG={
+    name:document.getElementById("inpName").value.trim()||"Coder",
+    lang:document.getElementById("inpLang").value.trim()||"Python 3",
+    quote:document.getElementById("inpQuote").value.trim()||DEFAULT_CFG.quote,
+    startDate:document.getElementById("inpStart").value||todayISO(),
+    weekdayPace:Math.max(1,parseInt(document.getElementById("inpWeekday").value,10)||2),
+    weekendPace:Math.max(1,parseInt(document.getElementById("inpWeekend").value,10)||4)
+  };
+  localStorage.setItem(CK_CFG,JSON.stringify(CFG));
+  document.getElementById("setupModal").classList.remove("open");
+  renderAll();
+}
+
 function toggleSidebar(){document.querySelector(".sidebar").classList.toggle("open");document.getElementById("sidebarOverlay").classList.toggle("open");}
-function confirmReset(){if(confirm("Reset all progress? This cannot be undone.")){S={};save();renderAll();}}
+function confirmReset(){if(confirm("Reset all solved problem progress? This cannot be undone.")){S={};save();renderAll();}}
 const TK="loki_lc150_theme_v1";
 function applyTheme(light){document.documentElement.classList.toggle("light",light);const btn=document.getElementById("themeBtn");if(btn)btn.textContent=light?"☽":"☀︎";}
 function toggleTheme(){const isL=document.documentElement.classList.contains("light");localStorage.setItem(TK,isL?"dark":"light");applyTheme(!isL);}
 applyTheme(localStorage.getItem(TK)==="light");
 renderAll();
+if(!CFG){openSetup();}
     </script>
   </body>
 </html>
